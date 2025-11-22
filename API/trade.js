@@ -1,14 +1,17 @@
 const users = new Map();
 
-// Начальные цены криптовалют (в долларах)
+// Обновленные цены криптовалют (в долларах)
 const cryptoPrices = {
     bitcoin: { price: 84608.49, change: 0.27, symbol: 'BTC', name: 'Bitcoin' },
-    ethereum: { price: 2500, change: 1.8, symbol: 'ETH', name: 'Ethereum' },
+    ethereum: { price: 3250.42, change: 1.85, symbol: 'ETH', name: 'Ethereum' },
     tether: { price: 0.999, change: 0.03, symbol: 'USDT', name: 'Tether' },
-    toncoin: { price: 1.52, change: 1.30, symbol: 'TON', name: 'Toncoin' },
+    toncoin: { price: 6.52, change: 2.30, symbol: 'TON', name: 'Toncoin' },
     solana: { price: 126.27, change: -1.01, symbol: 'SOL', name: 'Solana' },
-    tron: { price: 0.273, change: -0.85, symbol: 'TRX', name: 'TRON' },
-    gram: { price: 0.00274, change: 6.81, symbol: 'GRAM', name: 'Gram' }
+    ripple: { price: 0.573, change: -0.45, symbol: 'XRP', name: 'Ripple' },
+    cardano: { price: 0.452, change: 1.22, symbol: 'ADA', name: 'Cardano' },
+    dogecoin: { price: 0.128, change: 3.71, symbol: 'DOGE', name: 'Dogecoin' },
+    polkadot: { price: 7.84, change: -0.89, symbol: 'DOT', name: 'Polkadot' },
+    tron: { price: 0.118, change: 0.65, symbol: 'TRX', name: 'TRON' }
 };
 
 // Курс доллара к рублю (для конвертации)
@@ -35,6 +38,12 @@ function updatePrices() {
         // Ограничиваем минимальную цену
         if (cryptoPrices[crypto].price < 0.0001) {
             cryptoPrices[crypto].price = 0.0001;
+        }
+        
+        // Ограничиваем изменения для стабильных монет
+        if (crypto === 'tether') {
+            cryptoPrices[crypto].price = 0.999 + (Math.random() - 0.5) * 0.002;
+            cryptoPrices[crypto].change = (Math.random() - 0.5) * 0.1;
         }
     }
 }
