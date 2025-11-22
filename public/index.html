@@ -27,51 +27,136 @@
         }
         
         .header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 24px;
             padding-top: 10px;
         }
         
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
         .greeting {
-            font-size: 1.2em;
-            margin-bottom: 8px;
-            color: #fff;
+            font-size: 1.1em;
             font-weight: 600;
+        }
+        
+        .user-tier {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .notifications {
+            position: relative;
+            padding: 8px;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
         }
         
         .balance-section {
             background: #111;
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 24px;
             margin-bottom: 16px;
             border: 1px solid #222;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
         }
         
         .balance-label {
             color: #888;
             font-size: 0.9em;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .balance-amount {
-            font-size: 2.2em;
+            font-size: 2.4em;
             font-weight: bold;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .balance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #333;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.8em;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1em;
         }
         
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
         
         .action-btn {
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 14px 8px;
+            padding: 12px 8px;
             color: #fff;
-            font-size: 0.8em;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
@@ -79,50 +164,67 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            min-height: 60px;
-            justify-content: center;
         }
         
         .action-btn:hover {
             background: #222;
             border-color: #444;
+            transform: translateY(-1px);
         }
         
         .action-btn:active {
             transform: scale(0.98);
-            background: #252525;
         }
         
         .btn-icon {
-            font-size: 1.4em;
-            margin-bottom: 2px;
+            width: 24px;
+            height: 24px;
+            opacity: 0.9;
         }
         
         .btn-text {
-            font-size: 0.75em;
+            font-size: 0.7em;
             font-weight: 500;
         }
         
         .news-banner {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
             border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            text-align: center;
-            font-size: 0.85em;
+            padding: 14px 16px;
+            margin-bottom: 20px;
             border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .news-banner:hover {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+        }
+        
+        .news-icon {
+            font-size: 1.2em;
+        }
+        
+        .news-content {
+            flex: 1;
+        }
+        
+        .news-title {
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 2px;
         }
         
         .news-text {
-            font-weight: 500;
+            color: #888;
+            font-size: 0.8em;
         }
         
-        .section {
-            background: #111;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border: 1px solid #222;
+        .markets-section {
+            margin-bottom: 20px;
         }
         
         .section-header {
@@ -133,56 +235,61 @@
         }
         
         .section-title {
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: 600;
         }
         
-        .section-subtitle {
-            color: #888;
+        .view-all {
+            color: #007aff;
             font-size: 0.9em;
-            margin-bottom: 16px;
-        }
-        
-        .asset-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
-        
-        .asset-item {
-            background: #1a1a1a;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             cursor: pointer;
-            transition: background 0.2s;
-            border-radius: 8px;
-            margin-bottom: 4px;
         }
         
-        .asset-item:hover {
-            background: #222;
+        .markets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
         
-        .asset-left {
+        .market-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .market-card:hover {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+        
+        .market-header {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
         }
         
-        .asset-name {
+        .market-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .market-name {
             font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .market-price {
+            font-size: 1.1em;
+            font-weight: bold;
             margin-bottom: 4px;
         }
         
-        .asset-price {
-            color: #888;
-            font-size: 0.9em;
-        }
-        
-        .asset-change {
-            font-size: 0.9em;
+        .market-change {
+            font-size: 0.8em;
         }
         
         .change-positive {
@@ -193,6 +300,92 @@
             color: #ff4444;
         }
         
+        .assets-section {
+            background: #111;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #222;
+        }
+        
+        .assets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .assets-title {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .assets-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .assets-action {
+            color: #007aff;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .asset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .asset-item {
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .asset-item:hover {
+            background: #222;
+            border-color: #333;
+        }
+        
+        .asset-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .asset-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .asset-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .asset-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .asset-price {
+            color: #888;
+            font-size: 0.8em;
+        }
+        
         .asset-right {
             display: flex;
             flex-direction: column;
@@ -201,14 +394,47 @@
         
         .asset-amount {
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         
         .asset-value {
             color: #888;
+            font-size: 0.8em;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .quick-action {
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: #222;
+            border-color: #333;
+        }
+        
+        .quick-action-icon {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+        
+        .quick-action-text {
+            font-weight: 600;
             font-size: 0.9em;
         }
         
+        /* Модальные окна */
         .modal {
             position: fixed;
             top: 0;
@@ -228,8 +454,10 @@
             border-radius: 20px;
             padding: 24px;
             width: 100%;
-            max-width: 340px;
+            max-width: 380px;
             border: 1px solid #333;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .modal-header {
@@ -240,7 +468,7 @@
         }
         
         .modal-title {
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: 600;
         }
         
@@ -251,8 +479,8 @@
             font-size: 1.5em;
             cursor: pointer;
             padding: 0;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -264,14 +492,14 @@
             background: #222;
         }
         
-        .crypto-selector {
+        .crypto-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 20px;
         }
         
-        .crypto-option {
+        .crypto-card {
             background: #1a1a1a;
             border: 2px solid #333;
             border-radius: 12px;
@@ -281,19 +509,26 @@
             transition: all 0.2s;
         }
         
-        .crypto-option:hover {
+        .crypto-card:hover {
             background: #222;
             border-color: #444;
         }
         
-        .crypto-option.selected {
+        .crypto-card.selected {
             border-color: #007aff;
             background: #1a1a1a;
         }
         
         .crypto-icon {
-            font-size: 1.8em;
-            margin-bottom: 8px;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1em;
         }
         
         .crypto-name {
@@ -301,12 +536,12 @@
             margin-bottom: 4px;
         }
         
-        .crypto-symbol {
+        .crypto-price {
             color: #888;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
         
-        .action-buttons-modal {
+        .modal-actions {
             display: flex;
             gap: 12px;
         }
@@ -337,468 +572,163 @@
             transform: translateY(-1px);
         }
         
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-        
-        .hidden-balances .asset-item[data-amount="0"] {
+        .hidden {
             display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Шапка с пользователем -->
         <div class="header">
-            <div class="greeting" id="userGreeting">Добро пожаловать!</div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="greeting" id="userGreeting">Добро пожаловать!</div>
+                    <div class="user-tier">VIP 1 уровень</div>
+                </div>
+            </div>
+            <div class="notifications">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                <div class="notification-badge"></div>
+            </div>
         </div>
         
+        <!-- Баланс и статистика -->
         <div class="balance-section">
-            <div class="balance-label">Общий баланс в RUB</div>
+            <div class="balance-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.8-1.38 2.83-3.12 3.16z"/>
+                </svg>
+                Общий баланс в RUB
+            </div>
             <div class="balance-amount" id="totalBalance">0 ₽</div>
+            
+            <div class="balance-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Доступно</div>
+                    <div class="stat-value" id="availableBalance">0 ₽</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">В инвестициях</div>
+                    <div class="stat-value" id="investedBalance">0 ₽</div>
+                </div>
+            </div>
             
             <div class="action-buttons">
                 <div class="action-btn" onclick="showDepositModal()">
-                    <div class="btn-icon">💳</div>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                    </svg>
                     <div class="btn-text">Пополнить</div>
                 </div>
                 <div class="action-btn" onclick="showWithdrawModal()">
-                    <div class="btn-icon">🏦</div>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 8l-1.41 1.41L17.17 11H9v2h8.17l-1.58 1.58L17 16l4-4-4-4zM5 5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7v-2H5V5z"/>
+                    </svg>
                     <div class="btn-text">Вывести</div>
                 </div>
                 <div class="action-btn" onclick="showExchangeModal()">
-                    <div class="btn-icon">🔄</div>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+                    </svg>
                     <div class="btn-text">Обмен</div>
                 </div>
                 <div class="action-btn" onclick="showTradeModal()">
-                    <div class="btn-icon">📈</div>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                    </svg>
                     <div class="btn-text">Биржа</div>
                 </div>
             </div>
         </div>
         
-        <div class="news-banner">
-            <div class="news-text">🎉 Подписывайтесь на наш канал для получения эксклюзивных торговых сигналов!</div>
+        <!-- Новостной баннер -->
+        <div class="news-banner" onclick="openNewsChannel()">
+            <div class="news-icon">📰</div>
+            <div class="news-content">
+                <div class="news-title">Эксклюзивные торговые сигналы</div>
+                <div class="news-text">Подпишитесь на наш канал для получения прибыльных стратегий</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
         </div>
         
-        <div class="section">
+        <!-- Рынки -->
+        <div class="markets-section">
             <div class="section-header">
-                <div class="section-title">Активы</div>
-                <div class="toggle" onclick="toggleHiddenBalances()">Скрыть мелкие балансы</div>
+                <div class="section-title">Топ рынки</div>
+                <div class="view-all" onclick="showAllMarkets()">Все</div>
+            </div>
+            <div class="markets-grid" id="marketsGrid">
+                <!-- Markets will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Активы -->
+        <div class="assets-section">
+            <div class="assets-header">
+                <div class="assets-title">Ваши активы</div>
+                <div class="assets-actions">
+                    <div class="assets-action" onclick="toggleHiddenBalances()">Скрыть нули</div>
+                    <div class="assets-action" onclick="showPortfolio()">История</div>
+                </div>
+            </div>
+            <div class="asset-list" id="assetList">
+                <!-- Assets will be populated by JavaScript -->
             </div>
             
-            <div class="asset-list" id="assetList">
-                <div class="loading">Загрузка активов...</div>
+            <div class="quick-actions">
+                <div class="quick-action" onclick="showQuickBuy()">
+                    <div class="quick-action-icon">⚡</div>
+                    <div class="quick-action-text">Быстрая покупка</div>
+                </div>
+                <div class="quick-action" onclick="showQuickSell()">
+                    <div class="quick-action-icon">💸</div>
+                    <div class="quick-action-text">Быстрая продажа</div>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Модальное окно пополнения -->
+    <!-- Модальные окна -->
     <div class="modal" id="depositModal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Пополнение счета</div>
-                <button class="close-btn" onclick="closeDepositModal()">×</button>
+                <button class="close-btn" onclick="closeModal('depositModal')">×</button>
             </div>
-            <div class="crypto-selector" id="depositCryptoList">
-                <!-- Криптовалюты будут добавлены через JavaScript -->
+            <div class="crypto-grid" id="depositCryptoList">
+                <!-- Crypto cards will be populated by JavaScript -->
             </div>
-            <div class="action-buttons-modal">
-                <button class="modal-btn secondary-btn" onclick="closeDepositModal()">Отмена</button>
+            <div class="modal-actions">
+                <button class="modal-btn secondary-btn" onclick="closeModal('depositModal')">Отмена</button>
                 <button class="modal-btn primary-btn" onclick="confirmDeposit()">Пополнить</button>
             </div>
         </div>
     </div>
     
-    <!-- Модальное окно вывода -->
     <div class="modal" id="withdrawModal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Вывод средств</div>
-                <button class="close-btn" onclick="closeWithdrawModal()">×</button>
+                <button class="close-btn" onclick="closeModal('withdrawModal')">×</button>
             </div>
-            <div class="crypto-selector" id="withdrawCryptoList">
-                <!-- Криптовалюты будут добавлены через JavaScript -->
+            <div class="crypto-grid" id="withdrawCryptoList">
+                <!-- Crypto cards will be populated by JavaScript -->
             </div>
-            <div class="action-buttons-modal">
-                <button class="modal-btn secondary-btn" onclick="closeWithdrawModal()">Отмена</button>
+            <div class="modal-actions">
+                <button class="modal-btn secondary-btn" onclick="closeModal('withdrawModal')">Отмена</button>
                 <button class="modal-btn primary-btn" onclick="confirmWithdraw()">Вывести</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Модальное окно обмена -->
-    <div class="modal" id="exchangeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Быстрый обмен</div>
-                <button class="close-btn" onclick="closeExchangeModal()">×</button>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <div style="color: #888; margin-bottom: 12px;">Из:</div>
-                <div class="crypto-selector" id="exchangeFromList">
-                    <!-- Криптовалюты будут добавлены через JavaScript -->
-                </div>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <div style="color: #888; margin-bottom: 12px;">В:</div>
-                <div class="crypto-selector" id="exchangeToList">
-                    <!-- Криптовалюты будут добавлены через JavaScript -->
-                </div>
-            </div>
-            <div class="action-buttons-modal">
-                <button class="modal-btn secondary-btn" onclick="closeExchangeModal()">Отмена</button>
-                <button class="modal-btn primary-btn" onclick="confirmExchange()">Обменять</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Модальное окно торговли -->
-    <div class="modal" id="tradeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Торговля на бирже</div>
-                <button class="close-btn" onclick="closeTradeModal()">×</button>
-            </div>
-            <div class="crypto-selector" id="tradeCryptoList">
-                <!-- Криптовалюты будут добавлены через JavaScript -->
-            </div>
-            <div class="action-buttons-modal">
-                <button class="modal-btn secondary-btn" onclick="closeTradeModal()">Отмена</button>
-                <button class="modal-btn primary-btn" onclick="startTrading()">Начать торговлю</button>
             </div>
         </div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        let userData = null;
-        let hideZeroBalances = false;
-        let selectedCrypto = null;
-        let exchangeFrom = null;
-        let exchangeTo = null;
-        
-        tg.expand();
-        tg.BackButton.hide();
-        
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            updateUserGreeting();
-            loadData();
-            setInterval(loadData, 10000);
-        });
-        
-        // Обновление приветствия с именем пользователя
-        function updateUserGreeting() {
-            const user = tg.initDataUnsafe.user;
-            let greeting = 'Добро пожаловать!';
-            
-            if (user) {
-                if (user.first_name) {
-                    greeting = `Привет, ${user.first_name}!`;
-                }
-                if (user.username) {
-                    greeting = `@${user.username}`;
-                }
-            }
-            
-            document.getElementById('userGreeting').textContent = greeting;
-        }
-        
-        // Загрузка данных
-        async function loadData() {
-            try {
-                const response = await fetch('/api/trade', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'get_data',
-                        userId: tg.initDataUnsafe.user?.id || 'demo'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    userData = data.user;
-                    updateUI(data.user, data.prices);
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
-        
-        // Обновление интерфейса
-        function updateUI(user, prices) {
-            updateTotalBalance(user, prices);
-            updateAssetList(user, prices);
-        }
-        
-        // Обновление общего баланса
-        function updateTotalBalance(user, prices) {
-            let totalBalance = user.balance;
-            
-            for (const [crypto, amount] of Object.entries(user.portfolio)) {
-                if (amount > 0 && prices[crypto]) {
-                    totalBalance += prices[crypto].price * amount;
-                }
-            }
-            
-            document.getElementById('totalBalance').textContent = `${Math.floor(totalBalance)} ₽`;
-        }
-        
-        // Обновление списка активов
-        function updateAssetList(user, prices) {
-            const assetList = document.getElementById('assetList');
-            assetList.innerHTML = '';
-            
-            const assets = [
-                { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', emoji: '₿' },
-                { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', emoji: '🔷' },
-                { id: 'tether', name: 'Tether', symbol: 'USDT', emoji: '💵' },
-                { id: 'toncoin', name: 'Toncoin', symbol: 'TON', emoji: '⚡' },
-                { id: 'solana', name: 'Solana', symbol: 'SOL', emoji: '🔶' },
-                { id: 'ripple', name: 'Ripple', symbol: 'XRP', emoji: '✖️' },
-                { id: 'cardano', name: 'Cardano', symbol: 'ADA', emoji: '🅰️' },
-                { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', emoji: '🐕' },
-                { id: 'polkadot', name: 'Polkadot', symbol: 'DOT', emoji: '🔴' },
-                { id: 'tron', name: 'TRON', symbol: 'TRX', emoji: '🟣' }
-            ];
-            
-            assets.forEach(asset => {
-                const cryptoData = prices[asset.id];
-                if (!cryptoData) return;
-                
-                const amount = user.portfolio[asset.id] || 0;
-                const value = cryptoData.price * amount;
-                const change = cryptoData.change;
-                
-                if (hideZeroBalances && amount === 0) {
-                    return;
-                }
-                
-                const assetItem = document.createElement('div');
-                assetItem.className = 'asset-item';
-                assetItem.setAttribute('data-amount', amount);
-                assetItem.onclick = () => openTradeModal(asset.id, asset.name, asset.symbol, cryptoData);
-                
-                assetItem.innerHTML = `
-                    <div class="asset-left">
-                        <div class="asset-name">${asset.emoji} ${asset.name}</div>
-                        <div class="asset-price">
-                            $${cryptoData.price.toFixed(2)} 
-                            <span class="asset-change ${change >= 0 ? 'change-positive' : 'change-negative'}">
-                                ${change >= 0 ? '+' : ''}${change.toFixed(2)}%
-                            </span>
-                        </div>
-                    </div>
-                    <div class="asset-right">
-                        <div class="asset-amount">${amount.toFixed(2)} ${asset.symbol}</div>
-                        <div class="asset-value">${Math.floor(value)} ₽</div>
-                    </div>
-                `;
-                
-                assetList.appendChild(assetItem);
-            });
-        }
-        
-        // Создание списка криптовалют для модальных окон
-        function createCryptoSelector(containerId, onSelect, selectedId = null) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            
-            const cryptos = [
-                { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', emoji: '₿' },
-                { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', emoji: '🔷' },
-                { id: 'tether', name: 'Tether', symbol: 'USDT', emoji: '💵' },
-                { id: 'toncoin', name: 'Toncoin', symbol: 'TON', emoji: '⚡' },
-                { id: 'solana', name: 'Solana', symbol: 'SOL', emoji: '🔶' },
-                { id: 'ripple', name: 'Ripple', symbol: 'XRP', emoji: '✖️' },
-                { id: 'cardano', name: 'Cardano', symbol: 'ADA', emoji: '🅰️' }
-            ];
-            
-            cryptos.forEach(crypto => {
-                const option = document.createElement('div');
-                option.className = `crypto-option ${selectedId === crypto.id ? 'selected' : ''}`;
-                option.onclick = () => onSelect(crypto.id);
-                
-                option.innerHTML = `
-                    <div class="crypto-icon">${crypto.emoji}</div>
-                    <div class="crypto-name">${crypto.symbol}</div>
-                    <div class="crypto-symbol">${crypto.name}</div>
-                `;
-                
-                container.appendChild(option);
-            });
-        }
-        
-        // Показать модальное окно пополнения
-        function showDepositModal() {
-            createCryptoSelector('depositCryptoList', selectDepositCrypto);
-            selectedCrypto = null;
-            document.getElementById('depositModal').style.display = 'flex';
-        }
-        
-        function selectDepositCrypto(cryptoId) {
-            selectedCrypto = cryptoId;
-            updateCryptoSelection('depositCryptoList', cryptoId);
-        }
-        
-        // Показать модальное окно вывода
-        function showWithdrawModal() {
-            createCryptoSelector('withdrawCryptoList', selectWithdrawCrypto);
-            selectedCrypto = null;
-            document.getElementById('withdrawModal').style.display = 'flex';
-        }
-        
-        function selectWithdrawCrypto(cryptoId) {
-            selectedCrypto = cryptoId;
-            updateCryptoSelection('withdrawCryptoList', cryptoId);
-        }
-        
-        // Показать модальное окно обмена
-        function showExchangeModal() {
-            createCryptoSelector('exchangeFromList', selectExchangeFrom);
-            createCryptoSelector('exchangeToList', selectExchangeTo);
-            exchangeFrom = null;
-            exchangeTo = null;
-            document.getElementById('exchangeModal').style.display = 'flex';
-        }
-        
-        function selectExchangeFrom(cryptoId) {
-            exchangeFrom = cryptoId;
-            updateCryptoSelection('exchangeFromList', cryptoId);
-        }
-        
-        function selectExchangeTo(cryptoId) {
-            exchangeTo = cryptoId;
-            updateCryptoSelection('exchangeToList', cryptoId);
-        }
-        
-        // Показать модальное окно торговли
-        function showTradeModal() {
-            createCryptoSelector('tradeCryptoList', selectTradeCrypto);
-            selectedCrypto = null;
-            document.getElementById('tradeModal').style.display = 'flex';
-        }
-        
-        function selectTradeCrypto(cryptoId) {
-            selectedCrypto = cryptoId;
-            updateCryptoSelection('tradeCryptoList', cryptoId);
-        }
-        
-        // Обновление выбора криптовалюты
-        function updateCryptoSelection(containerId, selectedId) {
-            const options = document.querySelectorAll(`#${containerId} .crypto-option`);
-            options.forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            const selectedOption = document.querySelector(`#${containerId} .crypto-option:nth-child(${getCryptoIndex(selectedId) + 1})`);
-            if (selectedOption) {
-                selectedOption.classList.add('selected');
-            }
-        }
-        
-        function getCryptoIndex(cryptoId) {
-            const cryptos = ['bitcoin', 'ethereum', 'tether', 'toncoin', 'solana', 'ripple', 'cardano'];
-            return cryptos.indexOf(cryptoId);
-        }
-        
-        // Подтверждение действий
-        function confirmDeposit() {
-            if (!selectedCrypto) {
-                alert('Выберите криптовалюту для пополнения');
-                return;
-            }
-            tg.showPopup({
-                title: 'Пополнение',
-                message: `Функция пополнения ${selectedCrypto} в разработке`,
-                buttons: [{ type: 'ok' }]
-            });
-            closeDepositModal();
-        }
-        
-        function confirmWithdraw() {
-            if (!selectedCrypto) {
-                alert('Выберите криптовалюту для вывода');
-                return;
-            }
-            tg.showPopup({
-                title: 'Вывод',
-                message: `Функция вывода ${selectedCrypto} в разработке`,
-                buttons: [{ type: 'ok' }]
-            });
-            closeWithdrawModal();
-        }
-        
-        function confirmExchange() {
-            if (!exchangeFrom || !exchangeTo) {
-                alert('Выберите криптовалюты для обмена');
-                return;
-            }
-            if (exchangeFrom === exchangeTo) {
-                alert('Выберите разные криптовалюты');
-                return;
-            }
-            tg.showPopup({
-                title: 'Обмен',
-                message: `Обмен ${exchangeFrom} на ${exchangeTo} в разработке`,
-                buttons: [{ type: 'ok' }]
-            });
-            closeExchangeModal();
-        }
-        
-        function startTrading() {
-            if (!selectedCrypto) {
-                alert('Выберите криптовалюту для торговли');
-                return;
-            }
-            tg.showPopup({
-                title: 'Торговля',
-                message: `Торговля ${selectedCrypto} в разработке`,
-                buttons: [{ type: 'ok' }]
-            });
-            closeTradeModal();
-        }
-        
-        // Закрытие модальных окон
-        function closeDepositModal() {
-            document.getElementById('depositModal').style.display = 'none';
-        }
-        
-        function closeWithdrawModal() {
-            document.getElementById('withdrawModal').style.display = 'none';
-        }
-        
-        function closeExchangeModal() {
-            document.getElementById('exchangeModal').style.display = 'none';
-        }
-        
-        function closeTradeModal() {
-            document.getElementById('tradeModal').style.display = 'none';
-        }
-        
-        // Переключение скрытия нулевых балансов
-        function toggleHiddenBalances() {
-            hideZeroBalances = !hideZeroBalances;
-            const assetList = document.getElementById('assetList');
-            
-            if (hideZeroBalances) {
-                assetList.classList.add('hidden-balances');
-                document.querySelector('.toggle').textContent = 'Показать все балансы';
-            } else {
-                assetList.classList.remove('hidden-balances');
-                document.querySelector('.toggle').textContent = 'Скрыть мелкие балансы';
-            }
-            
-            if (userData) {
-                loadData();
-            }
-        }
+        // JavaScript код будет следующим файлом
     </script>
 </body>
     </html>
