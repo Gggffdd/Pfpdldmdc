@@ -1,55 +1,60 @@
 const users = new Map();
 
-// Обновленные цены криптовалют (в долларах)
+// Расширенные данные криптовалют
 const cryptoPrices = {
-    bitcoin: { price: 84608.49, change: 0.27, symbol: 'BTC', name: 'Bitcoin' },
-    ethereum: { price: 3250.42, change: 1.85, symbol: 'ETH', name: 'Ethereum' },
-    tether: { price: 0.999, change: 0.03, symbol: 'USDT', name: 'Tether' },
-    toncoin: { price: 6.52, change: 2.30, symbol: 'TON', name: 'Toncoin' },
-    solana: { price: 126.27, change: -1.01, symbol: 'SOL', name: 'Solana' },
-    ripple: { price: 0.573, change: -0.45, symbol: 'XRP', name: 'Ripple' },
-    cardano: { price: 0.452, change: 1.22, symbol: 'ADA', name: 'Cardano' },
-    dogecoin: { price: 0.128, change: 3.71, symbol: 'DOGE', name: 'Dogecoin' },
-    polkadot: { price: 7.84, change: -0.89, symbol: 'DOT', name: 'Polkadot' },
-    tron: { price: 0.118, change: 0.65, symbol: 'TRX', name: 'TRON' }
+    bitcoin: { price: 84608.49, change: 0.27, symbol: 'BTC', name: 'Bitcoin', volume: '28.5B' },
+    ethereum: { price: 3250.42, change: 1.85, symbol: 'ETH', name: 'Ethereum', volume: '14.2B' },
+    tether: { price: 0.999, change: 0.03, symbol: 'USDT', name: 'Tether', volume: '45.1B' },
+    toncoin: { price: 6.52, change: 2.30, symbol: 'TON', name: 'Toncoin', volume: '1.2B' },
+    solana: { price: 126.27, change: -1.01, symbol: 'SOL', name: 'Solana', volume: '3.8B' },
+    ripple: { price: 0.573, change: -0.45, symbol: 'XRP', name: 'Ripple', volume: '2.1B' },
+    cardano: { price: 0.452, change: 1.22, symbol: 'ADA', name: 'Cardano', volume: '1.5B' },
+    dogecoin: { price: 0.128, change: 3.71, symbol: 'DOGE', name: 'Dogecoin', volume: '2.3B' },
+    polkadot: { price: 7.84, change: -0.89, symbol: 'DOT', name: 'Polkadot', volume: '0.9B' },
+    tron: { price: 0.118, change: 0.65, symbol: 'TRX', name: 'TRON', volume: '1.7B' }
 };
 
-// Курс доллара к рублю (для конвертации)
 const USD_TO_RUB = 90;
 
 function initUser(userId) {
     if (!users.has(userId)) {
         users.set(userId, {
-            balance: 10000, // Начальный баланс в долларах
-            portfolio: {},
-            transactionHistory: []
+            balance: 50000, // Увеличенный стартовый баланс
+            portfolio: {
+                bitcoin: 0.001,
+                ethereum: 0.1,
+                tether: 100,
+                toncoin: 5
+            },
+            transactionHistory: [],
+            tier: 'VIP 1',
+            joinDate: new Date().toISOString()
         });
     }
     return users.get(userId);
 }
 
-// Функция для обновления цен с случайными изменениями
+// Улучшенная функция обновления цен
 function updatePrices() {
     for (const crypto in cryptoPrices) {
-        const randomChange = (Math.random() - 0.5) * 4; // -2% to +2%
+        // Более реалистичные изменения цен
+        const volatility = crypto === 'tether' ? 0.05 : 
+                          crypto === 'bitcoin' ? 1.5 : 2.5;
+        
+        const randomChange = (Math.random() - 0.5) * volatility;
         cryptoPrices[crypto].price *= (1 + randomChange / 100);
         cryptoPrices[crypto].change = randomChange;
         
-        // Ограничиваем минимальную цену
-        if (cryptoPrices[crypto].price < 0.0001) {
-            cryptoPrices[crypto].price = 0.0001;
-        }
-        
-        // Ограничиваем изменения для стабильных монет
+        // Ограничения для стабильных монет
         if (crypto === 'tether') {
-            cryptoPrices[crypto].price = 0.999 + (Math.random() - 0.5) * 0.002;
+            cryptoPrices[crypto].price = Math.max(0.995, Math.min(1.005, cryptoPrices[crypto].price));
             cryptoPrices[crypto].change = (Math.random() - 0.5) * 0.1;
         }
     }
 }
 
-// Обновляем цены каждые 30 секунд
-setInterval(updatePrices, 30000);
+// Обновляем цены каждые 20 секунд для большей динамики
+setInterval(updatePrices, 20000);
 
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
@@ -62,7 +67,6 @@ module.exports = async (req, res) => {
         const user = initUser(userId);
         
         if (action === 'get_data') {
-            // Конвертируем цены в рубли для отображения
             const pricesInRub = {};
             for (const [key, value] of Object.entries(cryptoPrices)) {
                 pricesInRub[key] = {
@@ -74,8 +78,10 @@ module.exports = async (req, res) => {
             return res.json({
                 success: true,
                 user: {
-                    balance: user.balance * USD_TO_RUB, // Конвертируем в рубли
-                    portfolio: user.portfolio
+                    balance: user.balance * USD_TO_RUB,
+                    portfolio: user.portfolio,
+                    tier: user.tier,
+                    joinDate: user.joinDate
                 },
                 prices: pricesInRub
             });
