@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Simulator</title>
+    <title>Crypto Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -14,217 +14,428 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #000;
+            color: #fff;
             min-height: 100vh;
+            line-height: 1.4;
         }
         
         .container {
             max-width: 400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+            padding-top: 10px;
         }
         
-        .balance-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+        .greeting {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .balance-section {
+            background: #111;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
-            text-align: center;
+            border: 1px solid #222;
+        }
+        
+        .balance-label {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 8px;
         }
         
         .balance-amount {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: bold;
-            margin: 10px 0;
+            margin-bottom: 16px;
         }
         
-        .crypto-list {
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 12px 8px;
+            color: #fff;
+            font-size: 0.85em;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #222;
+        }
+        
+        .section {
+            background: #111;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #222;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .section-subtitle {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 16px;
+        }
+        
+        .asset-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 1px;
         }
         
-        .crypto-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px;
+        .asset-item {
+            background: #1a1a1a;
+            padding: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: background 0.2s;
+            border-radius: 8px;
+            margin-bottom: 4px;
         }
         
-        .crypto-item:hover {
-            transform: translateY(-2px);
+        .asset-item:hover {
+            background: #222;
         }
         
-        .crypto-info {
+        .asset-left {
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
         }
         
-        .crypto-name {
-            font-weight: bold;
-            font-size: 1.1em;
+        .asset-name {
+            font-weight: 600;
+            margin-bottom: 4px;
         }
         
-        .crypto-price {
-            font-size: 1.2em;
-            font-weight: bold;
+        .asset-price {
+            color: #888;
+            font-size: 0.9em;
         }
         
-        .crypto-change {
+        .asset-change {
             font-size: 0.9em;
         }
         
         .change-positive {
-            color: #4ade80;
+            color: #00c853;
         }
         
         .change-negative {
-            color: #f87171;
+            color: #ff4444;
         }
         
-        .trade-modal {
+        .asset-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .asset-amount {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .asset-value {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .quick-exchange {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+            border: 1px solid #333;
+        }
+        
+        .toggle {
+            color: #007aff;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 20px;
         }
         
-        .trade-content {
-            background: white;
-            color: #333;
+        .modal-content {
+            background: #111;
             border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 350px;
+            padding: 24px;
+            width: 100%;
+            max-width: 340px;
+            border: 1px solid #333;
         }
         
-        .trade-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
         
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         .trade-form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-label {
+            color: #888;
+            font-size: 0.9em;
         }
         
         .amount-input {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            color: #fff;
             font-size: 1.1em;
+        }
+        
+        .trade-info {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 0.9em;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
         }
         
         .trade-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         
-        .btn {
+        .trade-btn {
             flex: 1;
-            padding: 15px;
+            padding: 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1.1em;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
         
-        .btn-buy {
-            background: #4ade80;
-            color: white;
+        .buy-btn {
+            background: #00c853;
+            color: #000;
         }
         
-        .btn-sell {
-            background: #f87171;
-            color: white;
+        .sell-btn {
+            background: #ff4444;
+            color: #fff;
         }
         
-        .btn-close {
-            background: #64748b;
-            color: white;
-        }
-        
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        
-        .portfolio-section {
-            margin-top: 30px;
-        }
-        
-        .portfolio-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px;
-            margin: 5px 0;
+        .trade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .loading {
             text-align: center;
             padding: 20px;
+            color: #888;
+        }
+        
+        .hidden-balances .asset-item[data-amount="0"] {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📈 Crypto Simulator</h1>
-            <p>Торгуйте виртуальной криптовалютой</p>
+            <div class="greeting">НОВОГОДНИЙ SALXAN…</div>
         </div>
         
-        <div class="balance-card">
-            <div>Ваш баланс</div>
-            <div class="balance-amount" id="balance">$10,000.00</div>
+        <div class="balance-section">
+            <div class="balance-label">Общий баланс в RUB</div>
+            <div class="balance-amount" id="totalBalance">0 ₽</div>
+            
+            <div class="action-buttons">
+                <div class="action-btn" onclick="showDepositModal()">Пополнить</div>
+                <div class="action-btn" onclick="showWithdrawModal()">Вывести</div>
+                <div class="action-btn" onclick="showExchangeModal()">Обмен</div>
+                <div class="action-btn" onclick="showTradeModal()">Биржа</div>
+            </div>
         </div>
         
-        <h3>📊 Доступные активы</h3>
-        <div class="crypto-list" id="cryptoList">
-            <div class="loading">Загрузка...</div>
+        <div class="quick-exchange">
+            <strong>Быстрые обмены</strong>
+            <div style="color: #888; font-size: 0.9em; margin-top: 4px;">
+                Обменивайте криптовалюту в несколько кликов.
+            </div>
         </div>
         
-        <div class="portfolio-section">
-            <h3>💼 Ваш портфель</h3>
-            <div id="portfolio">Загрузка...</div>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Активы</div>
+                <div class="toggle" onclick="toggleHiddenBalances()">Скрыть мелкие балансы</div>
+            </div>
+            
+            <div class="asset-list" id="assetList">
+                <div class="loading">Загрузка активов...</div>
+            </div>
         </div>
     </div>
     
-    <div class="trade-modal" id="tradeModal">
-        <div class="trade-content">
-            <div class="trade-header">
-                <h3 id="tradeCryptoName">Bitcoin</h3>
-                <button class="btn btn-close" onclick="closeTradeModal()">✕</button>
+    <!-- Модальное окно торговли -->
+    <div class="modal" id="tradeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="tradeTitle">Торговля</div>
+                <button class="close-btn" onclick="closeTradeModal()">×</button>
             </div>
             <div class="trade-form">
-                <input type="number" class="amount-input" id="tradeAmount" placeholder="Количество" step="0.001" min="0.001">
-                <div>Стоимость: $<span id="tradeCost">0.00</span></div>
-                <div class="trade-buttons">
-                    <button class="btn btn-buy" onclick="executeTrade('buy')">КУПИТЬ</button>
-                    <button class="btn btn-sell" onclick="executeTrade('sell')">ПРОДАТЬ</button>
+                <div class="input-group">
+                    <div class="input-label">Количество</div>
+                    <input type="number" class="amount-input" id="tradeAmount" placeholder="0.0" step="0.001" min="0.001">
                 </div>
+                
+                <div class="trade-info">
+                    <div class="info-row">
+                        <span>Цена:</span>
+                        <span id="tradePrice">$0.00</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Стоимость:</span>
+                        <span id="tradeCost">$0.00</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Доступно:</span>
+                        <span id="tradeAvailable">$0.00</span>
+                    </div>
+                </div>
+                
+                <div class="trade-buttons">
+                    <button class="trade-btn sell-btn" onclick="executeTrade('sell')" disabled>ПРОДАТЬ</button>
+                    <button class="trade-btn buy-btn" onclick="executeTrade('buy')" disabled>КУПИТЬ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно пополнения -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Пополнение счета</div>
+                <button class="close-btn" onclick="closeDepositModal()">×</button>
+            </div>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 2em; margin-bottom: 16px;">💳</div>
+                <div style="color: #888; margin-bottom: 20px;">Функция пополнения в разработке</div>
+                <button class="trade-btn buy-btn" onclick="closeDepositModal()" style="background: #007aff;">ПОНЯТНО</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно вывода -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Вывод средств</div>
+                <button class="close-btn" onclick="closeWithdrawModal()">×</button>
+            </div>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 2em; margin-bottom: 16px;">🏦</div>
+                <div style="color: #888; margin-bottom: 20px;">Функция вывода в разработке</div>
+                <button class="trade-btn sell-btn" onclick="closeWithdrawModal()" style="background: #007aff;">ПОНЯТНО</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно обмена -->
+    <div class="modal" id="exchangeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Быстрый обмен</div>
+                <button class="close-btn" onclick="closeExchangeModal()">×</button>
+            </div>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 2em; margin-bottom: 16px;">🔄</div>
+                <div style="color: #888; margin-bottom: 20px;">Функция обмена в разработке</div>
+                <button class="trade-btn buy-btn" onclick="closeExchangeModal()" style="background: #007aff;">ПОНЯТНО</button>
             </div>
         </div>
     </div>
@@ -233,9 +444,16 @@
         let tg = window.Telegram.WebApp;
         let userData = null;
         let currentCrypto = null;
+        let hideZeroBalances = false;
         
         tg.expand();
         tg.BackButton.hide();
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setInterval(loadData, 10000); // Обновление каждые 10 секунд
+        });
         
         // Загрузка данных
         async function loadData() {
@@ -264,72 +482,153 @@
         
         // Обновление интерфейса
         function updateUI(user, prices) {
-            // Обновляем баланс
-            document.getElementById('balance').textContent = `$${user.balance.toFixed(2)}`;
+            // Обновляем общий баланс
+            updateTotalBalance(user, prices);
             
-            // Обновляем список криптовалют
-            const cryptoList = document.getElementById('cryptoList');
-            cryptoList.innerHTML = '';
+            // Обновляем список активов
+            updateAssetList(user, prices);
+        }
+        
+        // Обновление общего баланса
+        function updateTotalBalance(user, prices) {
+            let totalBalance = user.balance;
             
-            for (const [crypto, info] of Object.entries(prices)) {
-                const changeClass = info.change >= 0 ? 'change-positive' : 'change-negative';
-                const changeSymbol = info.change >= 0 ? '↗' : '↘';
-                
-                const cryptoItem = document.createElement('div');
-                cryptoItem.className = 'crypto-item';
-                cryptoItem.onclick = () => openTradeModal(crypto, info);
-                cryptoItem.innerHTML = `
-                    <div class="crypto-info">
-                        <div class="crypto-name">${info.symbol} - ${info.name}</div>
-                        <div class="crypto-price">$${info.price.toFixed(2)}</div>
-                    </div>
-                    <div class="crypto-change ${changeClass}">
-                        ${changeSymbol} ${Math.abs(info.change).toFixed(2)}%
-                    </div>
-                `;
-                cryptoList.appendChild(cryptoItem);
-            }
-            
-            // Обновляем портфель
-            const portfolio = document.getElementById('portfolio');
-            portfolio.innerHTML = '';
-            
-            let hasInvestments = false;
             for (const [crypto, amount] of Object.entries(user.portfolio)) {
-                if (amount > 0) {
-                    hasInvestments = true;
-                    const price = prices[crypto].price;
-                    const value = price * amount;
-                    
-                    const portfolioItem = document.createElement('div');
-                    portfolioItem.className = 'portfolio-item';
-                    portfolioItem.innerHTML = `
-                        <strong>${prices[crypto].symbol}</strong>: ${amount.toFixed(4)} 
-                        ($${value.toFixed(2)})
-                    `;
-                    portfolio.appendChild(portfolioItem);
+                if (amount > 0 && prices[crypto]) {
+                    totalBalance += prices[crypto].price * amount;
                 }
             }
             
-            if (!hasInvestments) {
-                portfolio.innerHTML = '<div class="portfolio-item">У вас пока нет активов</div>';
+            document.getElementById('totalBalance').textContent = `${Math.floor(totalBalance)} ₽`;
+        }
+        
+        // Обновление списка активов
+        function updateAssetList(user, prices) {
+            const assetList = document.getElementById('assetList');
+            assetList.innerHTML = '';
+            
+            const assets = [
+                { id: 'tether', name: 'Tether', symbol: 'USDT', emoji: '💵' },
+                { id: 'toncoin', name: 'Toncoin', symbol: 'TON', emoji: '⚡' },
+                { id: 'solana', name: 'Solana', symbol: 'SOL', emoji: '🔶' },
+                { id: 'tron', name: 'TRON', symbol: 'TRX', emoji: '🟣' },
+                { id: 'gram', name: 'Gram', symbol: 'GRAM', emoji: '📱' },
+                { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', emoji: '₿' }
+            ];
+            
+            assets.forEach(asset => {
+                const cryptoData = prices[asset.id];
+                const amount = user.portfolio[asset.id] || 0;
+                const value = cryptoData ? cryptoData.price * amount : 0;
+                const change = cryptoData ? cryptoData.change : 0;
+                
+                if (hideZeroBalances && amount === 0) {
+                    return;
+                }
+                
+                const assetItem = document.createElement('div');
+                assetItem.className = 'asset-item';
+                assetItem.setAttribute('data-amount', amount);
+                assetItem.onclick = () => openTradeModal(asset.id, asset.name, asset.symbol, cryptoData);
+                
+                assetItem.innerHTML = `
+                    <div class="asset-left">
+                        <div class="asset-name">${asset.emoji} ${asset.name}</div>
+                        <div class="asset-price">
+                            $${cryptoData ? cryptoData.price.toFixed(2) : '0.00'} 
+                            <span class="asset-change ${change >= 0 ? 'change-positive' : 'change-negative'}">
+                                ${change >= 0 ? '+' : ''}${change ? change.toFixed(2) : '0.00'}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="asset-right">
+                        <div class="asset-amount">${amount.toFixed(2)} ${asset.symbol}</div>
+                        <div class="asset-value">${Math.floor(value)} ₽</div>
+                    </div>
+                `;
+                
+                assetList.appendChild(assetItem);
+            });
+        }
+        
+        // Переключение скрытия нулевых балансов
+        function toggleHiddenBalances() {
+            hideZeroBalances = !hideZeroBalances;
+            const assetList = document.getElementById('assetList');
+            
+            if (hideZeroBalances) {
+                assetList.classList.add('hidden-balances');
+                document.querySelector('.toggle').textContent = 'Показать все балансы';
+            } else {
+                assetList.classList.remove('hidden-balances');
+                document.querySelector('.toggle').textContent = 'Скрыть мелкие балансы';
             }
         }
         
         // Открытие модального окна торговли
-        function openTradeModal(crypto, info) {
+        function openTradeModal(crypto, name, symbol, info) {
             currentCrypto = crypto;
-            document.getElementById('tradeCryptoName').textContent = `${info.symbol} - ${info.name}`;
+            document.getElementById('tradeTitle').textContent = `Торговля ${symbol}`;
             document.getElementById('tradeAmount').value = '';
-            document.getElementById('tradeCost').textContent = '0.00';
+            document.getElementById('tradePrice').textContent = `$${info.price.toFixed(2)}`;
+            document.getElementById('tradeCost').textContent = '$0.00';
+            
+            const available = userData.portfolio[crypto] || 0;
+            document.getElementById('tradeAvailable').textContent = `${available.toFixed(4)} ${symbol}`;
+            
+            // Активируем кнопки
+            document.querySelector('.sell-btn').disabled = available === 0;
+            document.querySelector('.buy-btn').disabled = false;
+            
             document.getElementById('tradeModal').style.display = 'flex';
         }
         
-        // Закрытие модального окна
+        // Закрытие модальных окон
         function closeTradeModal() {
             document.getElementById('tradeModal').style.display = 'none';
             currentCrypto = null;
         }
+        
+        function showDepositModal() {
+            document.getElementById('depositModal').style.display = 'flex';
+        }
+        
+        function closeDepositModal() {
+            document.getElementById('depositModal').style.display = 'none';
+        }
+        
+        function showWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'flex';
+        }
+        
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'none';
+        }
+        
+        function showExchangeModal() {
+            document.getElementById('exchangeModal').style.display = 'flex';
+        }
+        
+        function closeExchangeModal() {
+            document.getElementById('exchangeModal').style.display = 'none';
+        }
+        
+        function showTradeModal() {
+            // Можно открыть общую торговлю или выбрать первую криптовалюту
+            if (userData && userData.prices) {
+                openTradeModal('bitcoin', 'Bitcoin', 'BTC', userData.prices.bitcoin);
+            }
+        }
+        
+        // Обновление стоимости при вводе количества
+        document.getElementById('tradeAmount').addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            if (currentCrypto && userData && userData.prices && userData.prices[currentCrypto]) {
+                const price = userData.prices[currentCrypto].price;
+                const cost = amount * price;
+                document.getElementById('tradeCost').textContent = `$${cost.toFixed(2)}`;
+            }
+        });
         
         // Выполнение сделки
         async function executeTrade(type) {
@@ -359,11 +658,12 @@
                 if (data.success) {
                     userData.balance = data.newBalance;
                     userData.portfolio = data.newPortfolio;
-                    await loadData(); // Перезагружаем данные для обновления цен
+                    await loadData();
                     closeTradeModal();
+                    
                     tg.showPopup({
                         title: 'Успешно!',
-                        message: `Сделка выполнена: ${type === 'buy' ? 'Покупка' : 'Продажа'} ${amount} ${currentCrypto}`,
+                        message: `Сделка ${type === 'buy' ? 'покупки' : 'продажи'} выполнена`,
                         buttons: [{ type: 'ok' }]
                     });
                 } else {
@@ -374,22 +674,6 @@
                 alert('Ошибка при выполнении сделки');
             }
         }
-        
-        // Обновление стоимости при вводе количества
-        document.getElementById('tradeAmount').addEventListener('input', function() {
-            const amount = parseFloat(this.value) || 0;
-            if (currentCrypto && userData) {
-                const price = userData.prices?.[currentCrypto]?.price || 0;
-                const cost = amount * price;
-                document.getElementById('tradeCost').textContent = cost.toFixed(2);
-            }
-        });
-        
-        // Автоматическое обновление цен каждые 10 секунд
-        setInterval(loadData, 10000);
-        
-        // Инициализация
-        loadData();
     </script>
 </body>
 </html>
