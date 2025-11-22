@@ -1,22 +1,46 @@
 const users = new Map();
+
+// Начальные цены криптовалют (в долларах)
 const cryptoPrices = {
-    bitcoin: { price: 45000, change: 2.5, symbol: 'BTC', name: 'Bitcoin' },
+    bitcoin: { price: 84608.49, change: 0.27, symbol: 'BTC', name: 'Bitcoin' },
     ethereum: { price: 2500, change: 1.8, symbol: 'ETH', name: 'Ethereum' },
-    solana: { price: 120, change: 5.2, symbol: 'SOL', name: 'Solana' },
-    cardano: { price: 0.6, change: -1.2, symbol: 'ADA', name: 'Cardano' },
-    dogecoin: { price: 0.15, change: 3.7, symbol: 'DOGE', name: 'Dogecoin' }
+    tether: { price: 0.999, change: 0.03, symbol: 'USDT', name: 'Tether' },
+    toncoin: { price: 1.52, change: 1.30, symbol: 'TON', name: 'Toncoin' },
+    solana: { price: 126.27, change: -1.01, symbol: 'SOL', name: 'Solana' },
+    tron: { price: 0.273, change: -0.85, symbol: 'TRX', name: 'TRON' },
+    gram: { price: 0.00274, change: 6.81, symbol: 'GRAM', name: 'Gram' }
 };
+
+// Курс доллара к рублю (для конвертации)
+const USD_TO_RUB = 90;
 
 function initUser(userId) {
     if (!users.has(userId)) {
         users.set(userId, {
-            balance: 10000,
+            balance: 10000, // Начальный баланс в долларах
             portfolio: {},
             transactionHistory: []
         });
     }
     return users.get(userId);
 }
+
+// Функция для обновления цен с случайными изменениями
+function updatePrices() {
+    for (const crypto in cryptoPrices) {
+        const randomChange = (Math.random() - 0.5) * 4; // -2% to +2%
+        cryptoPrices[crypto].price *= (1 + randomChange / 100);
+        cryptoPrices[crypto].change = randomChange;
+        
+        // Ограничиваем минимальную цену
+        if (cryptoPrices[crypto].price < 0.0001) {
+            cryptoPrices[crypto].price = 0.0001;
+        }
+    }
+}
+
+// Обновляем цены каждые 30 секунд
+setInterval(updatePrices, 30000);
 
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
@@ -29,13 +53,22 @@ module.exports = async (req, res) => {
         const user = initUser(userId);
         
         if (action === 'get_data') {
+            // Конвертируем цены в рубли для отображения
+            const pricesInRub = {};
+            for (const [key, value] of Object.entries(cryptoPrices)) {
+                pricesInRub[key] = {
+                    ...value,
+                    price: value.price * USD_TO_RUB
+                };
+            }
+            
             return res.json({
                 success: true,
                 user: {
-                    balance: user.balance,
+                    balance: user.balance * USD_TO_RUB, // Конвертируем в рубли
                     portfolio: user.portfolio
                 },
-                prices: cryptoPrices
+                prices: pricesInRub
             });
         }
 
@@ -64,7 +97,7 @@ module.exports = async (req, res) => {
             
             return res.json({ 
                 success: true, 
-                newBalance: user.balance,
+                newBalance: user.balance * USD_TO_RUB,
                 newPortfolio: user.portfolio
             });
         }
@@ -96,15 +129,8 @@ module.exports = async (req, res) => {
             
             return res.json({ 
                 success: true, 
-                newBalance: user.balance,
+                newBalance: user.balance * USD_TO_RUB,
                 newPortfolio: user.portfolio
-            });
-        }
-
-        if (action === 'get_prices') {
-            return res.json({
-                success: true,
-                prices: cryptoPrices
             });
         }
 
