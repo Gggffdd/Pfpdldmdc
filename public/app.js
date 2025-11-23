@@ -1,68 +1,153 @@
-let tg = window.Telegram.WebApp;
-let userData = null;
-let hideZeroBalances = false;
-let selectedCrypto = null;
+class CryptoWallet {
+    constructor() {
+        this.tg = window.Telegram.WebApp;
+        this.userData = null;
+        this.marketData = null;
+        this.hideZeroBalances = false;
+        this.selectedCrypto = null;
+        this.isBalanceVisible = true;
+        this.currentTab = 'portfolio';
+        
+        this.cryptoColors = {
+            bitcoin: '#f7931a',
+            ethereum: '#627eea',
+            tether: '#26a17b',
+            toncoin: '#0088cc',
+            solana: '#00ffbd',
+            ripple: '#23292f',
+            cardano: '#0033ad',
+            dogecoin: '#c2a633',
+            polkadot: '#e6007a'
+        };
+        
+        this.init();
+    }
 
-tg.expand();
-tg.BackButton.hide();
-
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-    loadData();
-    setInterval(loadData, 10000); // Обновление каждые 10 секунд
-});
-
-// Инициализация приложения
-function initializeApp() {
-    updateUserInfo();
-    initializeMarkets();
-}
-
-// Обновление информации о пользователе
-function updateUserInfo() {
-    const user = tg.initDataUnsafe.user;
-    const avatar = document.getElementById('userAvatar');
-    const greeting = document.getElementById('userGreeting');
-    
-    let displayName = 'Трейдер';
-    let avatarText = 'T';
-    
-    if (user) {
-        if (user.first_name) {
-            displayName = user.first_name;
-            avatarText = user.first_name.charAt(0).toUpperCase();
-        }
-        if (user.username) {
-            displayName = `@${user.username}`;
-            avatarText = user.username.charAt(0).toUpperCase();
+    async init() {
+        try {
+            console.log('🚀 Initializing Crypto Wallet Pro...');
+            
+            // Инициализация Telegram Web App
+            this.tg.expand();
+            this.tg.BackButton.hide();
+            this.tg.enableClosingConfirmation();
+            
+            // Настройка темы
+            this.setupTheme();
+            
+            // Инициализация интерфейса
+            this.setupEventListeners();
+            this.updateUserInfo();
+            this.initializeMarkets();
+            
+            // Загрузка данных
+            await this.loadData();
+            
+            // Автообновление каждые 10 секунд
+            this.startAutoRefresh();
+            
+            console.log('✅ Crypto Wallet Pro initialized successfully');
+            
+        } catch (error) {
+            console.error('❌ Initialization error:', error);
+            this.showError('Ошибка инициализации приложения');
         }
     }
-    
-    avatar.textContent = avatarText;
-    greeting.textContent = displayName;
-}
 
-// Инициализация рынков
-function initializeMarkets() {
-    const markets = [
-        { id: 'bitcoin', name: 'BTC/USDT', price: '84608.49', change: 0.27 },
-        { id: 'ethereum', name: 'ETH/USDT', price: '3250.42', change: 1.85 },
-        { id: 'solana', name: 'SOL/USDT', price: '126.27', change: -1.01 },
-        { id: 'toncoin', name: 'TON/USDT', price: '6.52', change: 2.30 }
-    ];
-    
-    const marketsGrid = document.getElementById('marketsGrid');
-    marketsGrid.innerHTML = '';
-    
-    markets.forEach(market => {
-        const marketCard = document.createElement('div');
-        marketCard.className = 'market-card';
-        marketCard.onclick = () => showMarketDetail(market.id);
+    setupTheme() {
+        // Устанавливаем цвет фона Telegram
+        this.tg.setHeaderColor('#1a1a1a');
+        this.tg.setBackgroundColor('#0a0a0a');
         
-        marketCard.innerHTML = `
+        // Определяем тему
+        if (this.tg.colorScheme === 'dark') {
+            document.documentElement.style.setProperty('--primary-bg', '#0a0a0a');
+            document.documentElement.style.setProperty('--secondary-bg', '#111111');
+        }
+    }
+
+    setupEventListeners() {
+        // Обработчики для навигации
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = e.currentTarget.getAttribute('onclick').match(/'([^']+)'/)[1];
+                this.switchTab(tab);
+            });
+        });
+
+        // Обработчики для модальных окон
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal(modal.id);
+                }
+            });
+        });
+
+        // Обработчик для кнопки скрытия баланса
+        document.querySelector('.eye-btn').addEventListener('click', () => {
+            this.toggleBalanceVisibility();
+        });
+    }
+
+    updateUserInfo() {
+        const user = this.tg.initDataUnsafe?.user;
+        const avatar = document.getElementById('userAvatar');
+        const greeting = document.getElementById('userGreeting');
+        const tier = document.getElementById('userTier');
+        
+        let displayName = 'Трейдер';
+        let avatarText = 'T';
+        
+        if (user) {
+            if (user.first_name) {
+                displayName = user.first_name;
+                avatarText = user.first_name.charAt(0).toUpperCase();
+            }
+            if (user.username) {
+                displayName = `@${user.username}`;
+                avatarText = user.username.charAt(0).toUpperCase();
+            }
+            
+            // Показываем премиум статус для некоторых пользователей
+            if (user.id % 3 === 0) {
+                tier.textContent = 'PREMIUM';
+                tier.style.color = '#ffd700';
+                document.getElementById('premiumIndicator').classList.add('active');
+            }
+        }
+        
+        avatar.textContent = avatarText;
+        greeting.textContent = displayName;
+    }
+
+    initializeMarkets() {
+        const markets = [
+            { id: 'bitcoin', name: 'BTC/USDT', price: '84,608.49', change: 0.27 },
+            { id: 'ethereum', name: 'ETH/USDT', price: '3,250.42', change: 1.85 },
+            { id: 'solana', name: 'SOL/USDT', price: '126.27', change: -1.01 },
+            { id: 'toncoin', name: 'TON/USDT', price: '6.52', change: 2.30 }
+        ];
+        
+        const marketsGrid = document.getElementById('marketsGrid');
+        marketsGrid.innerHTML = '';
+        
+        markets.forEach(market => {
+            const marketCard = this.createMarketCard(market);
+            marketsGrid.appendChild(marketCard);
+        });
+    }
+
+    createMarketCard(market) {
+        const card = document.createElement('div');
+        card.className = 'market-card';
+        card.onclick = () => this.showMarketDetail(market.id);
+        
+        const color = this.cryptoColors[market.id] || '#666666';
+        
+        card.innerHTML = `
             <div class="market-header">
-                <div class="market-icon" style="background: linear-gradient(135deg, #f7931a, #f3ba2f); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold;">
+                <div class="market-icon" style="background: ${color};">
                     ${market.id.charAt(0).toUpperCase()}
                 </div>
                 <div class="market-name">${market.name}</div>
@@ -73,98 +158,169 @@ function initializeMarkets() {
             </div>
         `;
         
-        marketsGrid.appendChild(marketCard);
-    });
-}
+        return card;
+    }
 
-// Загрузка данных
-async function loadData() {
-    try {
-        const response = await fetch('/api/trade', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+    async loadData() {
+        this.showLoading();
+        
+        try {
+            const response = await fetch('/api/trade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'get_data',
+                    userId: this.tg.initDataUnsafe?.user?.id || 'demo'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.userData = data.user;
+                this.marketData = data.prices;
+                this.updateUI();
+            } else {
+                throw new Error(data.error || 'Failed to load data');
+            }
+            
+        } catch (error) {
+            console.error('Error loading data:', error);
+            this.showError('Ошибка загрузки данных');
+            // Используем демо-данные в случае ошибки
+            this.useDemoData();
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    useDemoData() {
+        this.userData = {
+            balance: 50000,
+            portfolio: {
+                bitcoin: 0.001,
+                ethereum: 0.1,
+                tether: 100,
+                toncoin: 5,
+                solana: 0.5,
+                ripple: 50,
+                cardano: 100,
+                dogecoin: 1000,
+                polkadot: 10
             },
-            body: JSON.stringify({
-                action: 'get_data',
-                userId: tg.initDataUnsafe.user?.id || 'demo'
-            })
+            totalInvested: 25340,
+            totalProfit: 2340,
+            portfolioValue: 27680,
+            dailyProfit: 1150,
+            isPremium: false
+        };
+        
+        this.marketData = {
+            bitcoin: { price: 84608.49, change: 0.27, symbol: 'BTC', name: 'Bitcoin' },
+            ethereum: { price: 3250.42, change: 1.85, symbol: 'ETH', name: 'Ethereum' },
+            tether: { price: 0.999, change: 0.03, symbol: 'USDT', name: 'Tether' },
+            toncoin: { price: 6.52, change: 2.30, symbol: 'TON', name: 'Toncoin' },
+            solana: { price: 126.27, change: -1.01, symbol: 'SOL', name: 'Solana' },
+            ripple: { price: 0.573, change: -0.45, symbol: 'XRP', name: 'Ripple' },
+            cardano: { price: 0.452, change: 1.22, symbol: 'ADA', name: 'Cardano' },
+            dogecoin: { price: 0.128, change: 3.45, symbol: 'DOGE', name: 'Dogecoin' },
+            polkadot: { price: 6.84, change: -0.89, symbol: 'DOT', name: 'Polkadot' }
+        };
+        
+        this.updateUI();
+    }
+
+    updateUI() {
+        this.updateBalanceStats();
+        this.updateAssetList();
+        this.updateMarketCards();
+    }
+
+    updateBalanceStats() {
+        if (!this.userData || !this.marketData) return;
+        
+        const totalBalance = this.userData.balance || 0;
+        const portfolioValue = this.userData.portfolioValue || 0;
+        const availableBalance = totalBalance;
+        const investedBalance = portfolioValue;
+        const dailyProfit = this.userData.dailyProfit || 0;
+        const dailyProfitPercent = portfolioValue > 0 ? (dailyProfit / portfolioValue) * 100 : 0;
+        
+        // Обновляем отображение баланса
+        const balanceElement = document.getElementById('totalBalance');
+        if (this.isBalanceVisible) {
+            balanceElement.innerHTML = `
+                <span class="amount">${this.formatCurrency(totalBalance + investedBalance)}</span>
+                <span class="currency">RUB</span>
+            `;
+        } else {
+            balanceElement.innerHTML = `
+                <span class="amount">••••••</span>
+                <span class="currency">RUB</span>
+            `;
+        }
+        
+        document.getElementById('availableBalance').textContent = 
+            this.isBalanceVisible ? `${this.formatCurrency(availableBalance)} RUB` : '•••••• RUB';
+        document.getElementById('investedBalance').textContent = 
+            this.isBalanceVisible ? `${this.formatCurrency(investedBalance)} RUB` : '•••••• RUB';
+        
+        // Обновляем индикатор доходности
+        const profitElement = document.getElementById('dailyProfit');
+        profitElement.textContent = 
+            `${dailyProfitPercent >= 0 ? '+' : ''}${dailyProfitPercent.toFixed(2)}% ` +
+            `(${dailyProfit >= 0 ? '+' : ''}${this.formatCurrency(dailyProfit)} RUB)`;
+        profitElement.className = `profit-value ${dailyProfit >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    updateAssetList() {
+        const assetList = document.getElementById('assetsList');
+        if (!this.userData || !this.marketData) return;
+        
+        assetList.innerHTML = '';
+        
+        const assets = Object.keys(this.cryptoColors).map(id => ({
+            id,
+            name: this.marketData[id]?.name || id,
+            symbol: this.marketData[id]?.symbol || id.toUpperCase(),
+            color: this.cryptoColors[id]
+        }));
+        
+        let hasVisibleAssets = false;
+        
+        assets.forEach(asset => {
+            const cryptoData = this.marketData[asset.id];
+            if (!cryptoData) return;
+            
+            const amount = this.userData.portfolio[asset.id] || 0;
+            const value = cryptoData.price * amount;
+            const change = cryptoData.change;
+            
+            if (this.hideZeroBalances && amount === 0) {
+                return;
+            }
+            
+            hasVisibleAssets = true;
+            
+            const assetItem = this.createAssetItem(asset, cryptoData, amount, value, change);
+            assetList.appendChild(assetItem);
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            userData = data.user;
-            updateUI(data.user, data.prices);
-        }
-    } catch (error) {
-        console.error('Error loading data:', error);
-    }
-}
-
-// Обновление интерфейса
-function updateUI(user, prices) {
-    updateBalanceStats(user, prices);
-    updateAssetList(user, prices);
-}
-
-// Обновление статистики баланса
-function updateBalanceStats(user, prices) {
-    const totalBalance = user.balance;
-    let investedBalance = 0;
-    
-    for (const [crypto, amount] of Object.entries(user.portfolio)) {
-        if (amount > 0 && prices[crypto]) {
-            investedBalance += prices[crypto].price * amount;
+        if (!hasVisibleAssets) {
+            assetList.innerHTML = this.createEmptyState();
         }
     }
-    
-    const availableBalance = totalBalance - investedBalance;
-    
-    document.getElementById('totalBalance').textContent = `${formatCurrency(totalBalance)} ₽`;
-    document.getElementById('availableBalance').textContent = `${formatCurrency(availableBalance)} ₽`;
-    document.getElementById('investedBalance').textContent = `${formatCurrency(investedBalance)} ₽`;
-}
 
-// Обновление списка активов
-function updateAssetList(user, prices) {
-    const assetList = document.getElementById('assetList');
-    assetList.innerHTML = '';
-    
-    const assets = [
-        { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', color: '#f7931a' },
-        { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', color: '#627eea' },
-        { id: 'tether', name: 'Tether', symbol: 'USDT', color: '#26a17b' },
-        { id: 'toncoin', name: 'Toncoin', symbol: 'TON', color: '#0088cc' },
-        { id: 'solana', name: 'Solana', symbol: 'SOL', color: '#00ffbd' },
-        { id: 'ripple', name: 'Ripple', symbol: 'XRP', color: '#23292f' },
-        { id: 'cardano', name: 'Cardano', symbol: 'ADA', color: '#0033ad' }
-    ];
-    
-    let hasVisibleAssets = false;
-    
-    assets.forEach(asset => {
-        const cryptoData = prices[asset.id];
-        if (!cryptoData) return;
+    createAssetItem(asset, cryptoData, amount, value, change) {
+        const item = document.createElement('div');
+        item.className = 'asset-item';
+        item.onclick = () => this.showAssetDetail(asset.id);
         
-        const amount = user.portfolio[asset.id] || 0;
-        const value = cryptoData.price * amount;
-        const change = cryptoData.change;
-        
-        if (hideZeroBalances && amount === 0) {
-            return;
-        }
-        
-        hasVisibleAssets = true;
-        
-        const assetItem = document.createElement('div');
-        assetItem.className = 'asset-item';
-        assetItem.setAttribute('data-amount', amount);
-        assetItem.onclick = () => showAssetDetail(asset.id);
-        
-        assetItem.innerHTML = `
+        item.innerHTML = `
             <div class="asset-left">
-                <div class="asset-icon" style="background: ${asset.color}; color: white;">
+                <div class="asset-icon" style="background: ${asset.color};">
                     ${asset.symbol.charAt(0)}
                 </div>
                 <div class="asset-info">
@@ -179,224 +335,268 @@ function updateAssetList(user, prices) {
             </div>
             <div class="asset-right">
                 <div class="asset-amount">${amount.toFixed(4)} ${asset.symbol}</div>
-                <div class="asset-value">${formatCurrency(value)} ₽</div>
+                <div class="asset-value">${this.isBalanceVisible ? this.formatCurrency(value) + ' RUB' : '••••••'}</div>
             </div>
         `;
         
-        assetList.appendChild(assetItem);
-    });
-    
-    if (!hasVisibleAssets) {
-        assetList.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #888;">
-                <div style="font-size: 2em; margin-bottom: 16px;">💼</div>
-                <div>У вас пока нет активов</div>
-                <div style="font-size: 0.9em; margin-top: 8px;">Начните с пополнения счета</div>
+        return item;
+    }
+
+    createEmptyState() {
+        return `
+            <div class="text-center" style="padding: 40px 20px; color: var(--text-secondary);">
+                <div style="font-size: 3em; margin-bottom: 16px;">💼</div>
+                <div style="font-size: 16px; margin-bottom: 8px;">У вас пока нет активов</div>
+                <div style="font-size: 14px;">Начните с пополнения счета или покупки криптовалюты</div>
+                <button class="btn primary mt-3" onclick="wallet.showDepositModal()" style="margin-top: 16px;">
+                    📥 Пополнить счет
+                </button>
             </div>
         `;
     }
-}
 
-// Форматирование валюты
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('ru-RU').format(Math.floor(amount));
-}
-
-// Создание списка криптовалют для модальных окон
-function createCryptoSelector(containerId, onSelect) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    
-    const cryptos = [
-        { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', color: '#f7931a' },
-        { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', color: '#627eea' },
-        { id: 'tether', name: 'Tether', symbol: 'USDT', color: '#26a17b' },
-        { id: 'toncoin', name: 'Toncoin', symbol: 'TON', color: '#0088cc' },
-        { id: 'solana', name: 'Solana', symbol: 'SOL', color: '#00ffbd' },
-        { id: 'ripple', name: 'Ripple', symbol: 'XRP', color: '#23292f' }
-    ];
-    
-    cryptos.forEach(crypto => {
-        const card = document.createElement('div');
-        card.className = `crypto-card ${selectedCrypto === crypto.id ? 'selected' : ''}`;
-        card.onclick = () => {
-            selectedCrypto = crypto.id;
-            onSelect(crypto.id);
-            updateCryptoSelection(containerId);
-        };
+    updateMarketCards() {
+        if (!this.marketData) return;
         
-        card.innerHTML = `
-            <div class="crypto-icon" style="background: ${crypto.color}; color: white;">
-                ${crypto.symbol}
-            </div>
-            <div class="crypto-name">${crypto.symbol}</div>
-            <div class="crypto-price">${crypto.name}</div>
-        `;
+        const marketsGrid = document.getElementById('marketsGrid');
+        const topMarkets = ['bitcoin', 'ethereum', 'solana', 'toncoin'];
         
-        container.appendChild(card);
-    });
-}
+        marketsGrid.innerHTML = '';
+        
+        topMarkets.forEach(marketId => {
+            const marketData = this.marketData[marketId];
+            if (marketData) {
+                const marketCard = this.createMarketCard({
+                    id: marketId,
+                    name: `${marketData.symbol}/USDT`,
+                    price: this.formatCurrency(marketData.priceUSD || marketData.price),
+                    change: marketData.change
+                });
+                marketsGrid.appendChild(marketCard);
+            }
+        });
+    }
 
-// Обновление выбора криптовалюты
-function updateCryptoSelection(containerId) {
-    const cards = document.querySelectorAll(`#${containerId} .crypto-card`);
-    cards.forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    if (selectedCrypto) {
-        const selectedCard = document.querySelector(`#${containerId} .crypto-card:nth-child(${getCryptoIndex(selectedCrypto) + 1})`);
-        if (selectedCard) {
-            selectedCard.classList.add('selected');
+    // Модальные окна
+    showDepositModal() {
+        this.createCryptoSelector('depositCryptoList');
+        this.selectedCrypto = null;
+        this.showModal('depositModal');
+    }
+
+    showWithdrawModal() {
+        this.createCryptoSelector('withdrawCryptoList');
+        this.selectedCrypto = null;
+        this.showModal('withdrawModal');
+    }
+
+    createCryptoSelector(containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        Object.entries(this.cryptoColors).forEach(([cryptoId, color]) => {
+            const cryptoData = this.marketData?.[cryptoId];
+            if (!cryptoData) return;
+            
+            const card = document.createElement('div');
+            card.className = `crypto-card ${this.selectedCrypto === cryptoId ? 'selected' : ''}`;
+            card.onclick = () => {
+                this.selectedCrypto = cryptoId;
+                this.updateCryptoSelection(containerId);
+            };
+            
+            card.innerHTML = `
+                <div class="crypto-icon" style="background: ${color};">
+                    ${cryptoData.symbol}
+                </div>
+                <div class="crypto-name">${cryptoData.symbol}</div>
+                <div class="crypto-price">${cryptoData.name}</div>
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+    updateCryptoSelection(containerId) {
+        document.querySelectorAll(`#${containerId} .crypto-card`).forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        if (this.selectedCrypto) {
+            const selectedCard = document.querySelector(`#${containerId} .crypto-card:nth-child(${this.getCryptoIndex(this.selectedCrypto) + 1})`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
         }
     }
-}
 
-function getCryptoIndex(cryptoId) {
-    const cryptos = ['bitcoin', 'ethereum', 'tether', 'toncoin', 'solana', 'ripple'];
-    return cryptos.indexOf(cryptoId);
-}
+    getCryptoIndex(cryptoId) {
+        return Object.keys(this.cryptoColors).indexOf(cryptoId);
+    }
 
-// Функции модальных окон
-function showDepositModal() {
-    createCryptoSelector('depositCryptoList', () => updateCryptoSelection('depositCryptoList'));
-    selectedCrypto = null;
-    document.getElementById('depositModal').style.display = 'flex';
-}
+    // Действия с криптовалютой
+    async confirmDeposit() {
+        if (!this.selectedCrypto) {
+            this.showPopup('Ошибка', 'Выберите криптовалюту для пополнения');
+            return;
+        }
+        
+        this.showPopup(
+            'Пополнение', 
+            `Функция пополнения ${this.selectedCrypto} будет доступна в следующем обновлении`
+        );
+        this.closeModal('depositModal');
+    }
 
-function showWithdrawModal() {
-    createCryptoSelector('withdrawCryptoList', () => updateCryptoSelection('withdrawCryptoList'));
-    selectedCrypto = null;
-    document.getElementById('withdrawModal').style.display = 'flex';
-}
+    async confirmWithdraw() {
+        if (!this.selectedCrypto) {
+            this.showPopup('Ошибка', 'Выберите криптовалюту для вывода');
+            return;
+        }
+        
+        this.showPopup(
+            'Вывод', 
+            `Функция вывода ${this.selectedCrypto} будет доступна в следующем обновлении`
+        );
+        this.closeModal('withdrawModal');
+    }
 
-function showExchangeModal() {
-    tg.showPopup({
-        title: 'Обмен',
-        message: 'Функция обмена будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
+    // Вспомогательные методы
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('ru-RU').format(amount.toFixed(0));
+    }
 
-function showTradeModal() {
-    tg.showPopup({
-        title: 'Торговая биржа',
-        message: 'Расширенная торговля будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
+    showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
 
-function showMarketDetail(marketId) {
-    tg.showPopup({
-        title: 'Детали рынка',
-        message: `Подробная информация о ${marketId} будет доступна в следующем обновлении`,
-        buttons: [{ type: 'ok' }]
-    });
-}
+    closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        this.selectedCrypto = null;
+    }
 
-function showAssetDetail(assetId) {
-    tg.showPopup({
-        title: 'Детали актива',
-        message: `Подробная информация об активе будет доступна в следующем обновлении`,
-        buttons: [{ type: 'ok' }]
-    });
-}
+    showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
 
-function showQuickBuy() {
-    tg.showPopup({
-        title: 'Быстрая покупка',
-        message: 'Функция быстрой покупки будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
+    hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
 
-function showQuickSell() {
-    tg.showPopup({
-        title: 'Быстрая продажа',
-        message: 'Функция быстрой продажи будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
-
-function showAllMarkets() {
-    tg.showPopup({
-        title: 'Все рынки',
-        message: 'Полный список рынков будет доступен в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
-
-function showPortfolio() {
-    tg.showPopup({
-        title: 'История портфеля',
-        message: 'История транзакций будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
-
-function openNewsChannel() {
-    tg.showPopup({
-        title: 'Новостной канал',
-        message: 'Ссылка на канал будет доступна в следующем обновлении',
-        buttons: [{ type: 'ok' }]
-    });
-}
-
-// Подтверждение действий
-function confirmDeposit() {
-    if (!selectedCrypto) {
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Выберите криптовалюту для пополнения',
+    showPopup(title, message) {
+        this.tg.showPopup({
+            title: title,
+            message: message,
             buttons: [{ type: 'ok' }]
         });
-        return;
     }
-    
-    tg.showPopup({
-        title: 'Пополнение',
-        message: `Функция пополнения ${selectedCrypto} будет доступна в следующем обновлении`,
-        buttons: [{ type: 'ok' }]
-    });
-    closeModal('depositModal');
-}
 
-function confirmWithdraw() {
-    if (!selectedCrypto) {
-        tg.showPopup({
+    showError(message) {
+        this.tg.showPopup({
             title: 'Ошибка',
-            message: 'Выберите криптовалюту для вывода',
+            message: message,
             buttons: [{ type: 'ok' }]
         });
-        return;
     }
-    
-    tg.showPopup({
-        title: 'Вывод',
-        message: `Функция вывода ${selectedCrypto} будет доступна в следующем обновлении`,
-        buttons: [{ type: 'ok' }]
-    });
-    closeModal('withdrawModal');
+
+    toggleBalanceVisibility() {
+        this.isBalanceVisible = !this.isBalanceVisible;
+        const eyeIcon = document.getElementById('eyeIcon');
+        eyeIcon.textContent = this.isBalanceVisible ? '👁️' : '🙈';
+        this.updateBalanceStats();
+        this.updateAssetList();
+    }
+
+    toggleHiddenBalances() {
+        this.hideZeroBalances = !this.hideZeroBalances;
+        const button = document.getElementById('hideBalancesBtn');
+        button.textContent = this.hideZeroBalances ? 'Показать все' : 'Скрыть нули';
+        this.updateAssetList();
+    }
+
+    switchTab(tab) {
+        this.currentTab = tab;
+        
+        // Обновляем активную кнопку навигации
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+        
+        // Здесь можно добавить логику переключения контента вкладок
+        this.showPopup('Вкладка', `Раздел "${tab}" будет доступен в следующем обновлении`);
+    }
+
+    startAutoRefresh() {
+        setInterval(() => {
+            this.loadData();
+        }, 10000); // Обновление каждые 10 секунд
+    }
+
+    // Методы для различных функций (заглушки)
+    showExchangeModal() {
+        this.showPopup('Обмен', 'Функция обмена будет доступна в следующем обновлении');
+    }
+
+    showTradeModal() {
+        this.showPopup('Торговля', 'Расширенная торговля будет доступна в следующем обновлении');
+    }
+
+    showMarketDetail(marketId) {
+        this.showPopup('Детали рынка', `Подробная информация о ${marketId} будет доступна в следующем обновлении`);
+    }
+
+    showAssetDetail(assetId) {
+        this.showPopup('Детали актива', `Подробная информация об активе будет доступна в следующем обновлении`);
+    }
+
+    showQuickBuyModal() {
+        this.showPopup('Быстрая покупка', 'Функция быстрой покупки будет доступна в следующем обновлении');
+    }
+
+    showQuickSellModal() {
+        this.showPopup('Быстрая продажа', 'Функция быстрой продажи будет доступна в следующем обновлении');
+    }
+
+    showAllMarkets() {
+        this.showPopup('Все рынки', 'Полный список рынков будет доступен в следующем обновлении');
+    }
+
+    showPortfolioHistory() {
+        this.showPopup('История портфеля', 'История транзакций будет доступна в следующем обновлении');
+    }
+
+    showNotifications() {
+        this.showPopup('Уведомления', 'Уведомления будут доступны в следующем обновлении');
+    }
+
+    showSettings() {
+        this.showPopup('Настройки', 'Настройки будут доступны в следующем обновлении');
+    }
 }
 
-// Закрытие модальных окон
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-    selectedCrypto = null;
-}
+// Инициализация приложения
+let wallet;
 
-// Переключение скрытия нулевых балансов
-function toggleHiddenBalances() {
-    hideZeroBalances = !hideZeroBalances;
-    const actionElement = document.querySelector('.assets-action');
-    
-    if (hideZeroBalances) {
-        actionElement.textContent = 'Показать все';
-    } else {
-        actionElement.textContent = 'Скрыть нули';
-    }
-    
-    if (userData) {
-        loadData();
-    }
-  }
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Starting Crypto Wallet Pro...');
+    wallet = new CryptoWallet();
+});
+
+// Глобальные функции для HTML onclick атрибутов
+function showDepositModal() { wallet?.showDepositModal(); }
+function showWithdrawModal() { wallet?.showWithdrawModal(); }
+function showExchangeModal() { wallet?.showExchangeModal(); }
+function showTradeModal() { wallet?.showTradeModal(); }
+function showQuickBuyModal() { wallet?.showQuickBuyModal(); }
+function showQuickSellModal() { wallet?.showQuickSellModal(); }
+function showAllMarkets() { wallet?.showAllMarkets(); }
+function showPortfolioHistory() { wallet?.showPortfolioHistory(); }
+function showNotifications() { wallet?.showNotifications(); }
+function showSettings() { wallet?.showSettings(); }
+function confirmDeposit() { wallet?.confirmDeposit(); }
+function confirmWithdraw() { wallet?.confirmWithdraw(); }
+function closeModal(modalId) { wallet?.closeModal(modalId); }
+function toggleHiddenBalances() { wallet?.toggleHiddenBalances(); }
+function toggleBalanceVisibility() { wallet?.toggleBalanceVisibility(); }
+function switchTab(tab) { wallet?.switchTab(tab); }
