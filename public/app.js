@@ -40,7 +40,6 @@ class CryptoWallet {
         this.updateUserInfo();
         this.loadUserData();
         this.initEventListeners();
-        this.initSmoothAnimations();
     }
 
     initEventListeners() {
@@ -48,29 +47,6 @@ class CryptoWallet {
             if (!e.target.closest('.currency-dropdown')) {
                 this.hideCurrencyDropdown();
             }
-        });
-    }
-
-    initSmoothAnimations() {
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '50px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.asset-item, .action-btn, .qr-banner').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
         });
     }
 
@@ -109,7 +85,7 @@ class CryptoWallet {
                 }
             };
             this.updateUI();
-        }, 800);
+        }, 500);
     }
 
     updateUI() {
@@ -141,7 +117,7 @@ class CryptoWallet {
         assetsList.innerHTML = '';
         let hasVisibleAssets = false;
 
-        this.cryptoAssets.forEach((asset, index) => {
+        this.cryptoAssets.forEach(asset => {
             const amount = (this.userData?.portfolio && this.userData.portfolio[asset.id]) || 0;
             const price = this.cryptoPrices[asset.id] || 0;
             let value = price * amount;
@@ -158,7 +134,6 @@ class CryptoWallet {
 
             const assetItem = document.createElement('div');
             assetItem.className = 'asset-item';
-            assetItem.style.animationDelay = `${index * 0.1}s`;
             assetItem.onclick = () => this.showAssetDetail(asset.id);
 
             const currencySymbol = this.selectedCurrency === 'USD' ? '$' : 
@@ -185,14 +160,14 @@ class CryptoWallet {
 
         if (!hasVisibleAssets) {
             assetsList.innerHTML = `
-                <div class="text-center" style="padding: 60px 20px; color: #888;">
-                    <div style="margin-bottom: 20px; opacity: 0.5;">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                <div class="text-center" style="padding: 40px 20px; color: #666;">
+                    <div style="margin-bottom: 16px;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                         </svg>
                     </div>
-                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600;">Активы отсутствуют</div>
-                    <div style="font-size: 15px; opacity: 0.7;">Начните с покупки криптовалюты</div>
+                    <div style="margin-bottom: 8px; font-weight: 600;">Активы отсутствуют</div>
+                    <div style="font-size: 0.9em;">Начните с покупки криптовалюты</div>
                 </div>
             `;
         }
