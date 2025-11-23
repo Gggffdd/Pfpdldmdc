@@ -17,20 +17,15 @@
   "routes": [
     {
       "src": "/api/bot",
-      "dest": "/api/bot.js",
-      "methods": ["POST", "GET"]
+      "dest": "/api/bot.js"
     },
     {
       "src": "/api/trade",
-      "dest": "/api/trade.js",
-      "methods": ["POST", "OPTIONS"]
+      "dest": "/api/trade.js"
     },
     {
       "src": "/(.*)",
       "dest": "/public/$1"
     }
-  ],
-  "env": {
-    "BOT_TOKEN": "@crypto-wallet-bot-token"
-  }
+  ]
 }
