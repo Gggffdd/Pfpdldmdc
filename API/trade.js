@@ -1,77 +1,74 @@
 const users = new Map();
 
-// Реалистичные данные криптовалют
+// Профессиональные данные криптовалют
 const cryptoData = {
     bitcoin: { 
-        price: 84608.49, 
+        price: 846084.90, 
         change: 0.27, 
         symbol: 'BTC', 
         name: 'Bitcoin',
-        volume: 28500000000,
-        marketCap: 1650000000000
+        color: '#F7931A',
+        volume: '28.3B'
     },
     ethereum: { 
-        price: 3250.42, 
+        price: 32504.20, 
         change: 1.85, 
         symbol: 'ETH', 
         name: 'Ethereum',
-        volume: 15200000000,
-        marketCap: 390000000000
+        color: '#627EEA',
+        volume: '14.2B'
     },
     tether: { 
-        price: 0.999, 
+        price: 99.90, 
         change: 0.03, 
         symbol: 'USDT', 
         name: 'Tether',
-        volume: 48500000000,
-        marketCap: 95000000000
+        color: '#26A17B',
+        volume: '45.1B'
     },
     toncoin: { 
-        price: 6.52, 
+        price: 652.30, 
         change: 2.30, 
         symbol: 'TON', 
         name: 'Toncoin',
-        volume: 280000000,
-        marketCap: 11200000000
+        color: '#0088CC',
+        volume: '1.2B'
     },
     solana: { 
-        price: 126.27, 
+        price: 12627.40, 
         change: -1.01, 
         symbol: 'SOL', 
         name: 'Solana',
-        volume: 3200000000,
-        marketCap: 55000000000
+        color: '#00FFBD',
+        volume: '3.8B'
     },
     ripple: { 
-        price: 0.573, 
+        price: 57.35, 
         change: -0.45, 
         symbol: 'XRP', 
         name: 'Ripple',
-        volume: 1500000000,
-        marketCap: 31000000000
+        color: '#23292F',
+        volume: '2.1B'
     },
     cardano: { 
-        price: 0.452, 
+        price: 45.20, 
         change: 1.22, 
         symbol: 'ADA', 
         name: 'Cardano',
-        volume: 450000000,
-        marketCap: 16000000000
+        color: '#0033AD',
+        volume: '0.9B'
     }
 };
 
-const USD_TO_RUB = 90;
-
-// Инициализация пользователя
 function initUser(userId) {
     if (!users.has(userId)) {
         users.set(userId, {
             balance: 50000,
             portfolio: {
-                bitcoin: 0.001,
-                ethereum: 0.1,
-                tether: 100,
-                toncoin: 5
+                bitcoin: 0.0012,
+                ethereum: 0.085,
+                tether: 1500,
+                toncoin: 25.5
             },
             transactionHistory: [],
             createdAt: new Date().toISOString()
@@ -82,35 +79,20 @@ function initUser(userId) {
 
 // Реалистичное обновление цен
 function updatePrices() {
-    for (const [crypto, data] of Object.entries(cryptoData)) {
-        // Более реалистичная волатильность
-        let volatility;
-        switch(crypto) {
-            case 'bitcoin':
-                volatility = 0.8;
-                break;
-            case 'ethereum':
-                volatility = 1.2;
-                break;
-            case 'tether':
-                volatility = 0.05;
-                break;
-            default:
-                volatility = 1.5;
-        }
+    for (const crypto in cryptoData) {
+        const volatility = cryptoData[crypto].volatility || 
+                          (crypto === 'tether' ? 0.1 : 
+                           crypto === 'bitcoin' ? 2.0 : 3.5);
         
-        const randomChange = (Math.random() - 0.5) * 2 * volatility;
-        const newPrice = data.price * (1 + randomChange / 100);
+        const randomChange = (Math.random() - 0.5) * volatility;
+        const newPrice = cryptoData[crypto].price * (1 + randomChange / 100);
         
-        // Ограничения на минимальную цену
-        if (newPrice > 0.001) {
-            cryptoData[crypto].price = newPrice;
-            cryptoData[crypto].change = randomChange;
-        }
+        cryptoData[crypto].price = Math.max(newPrice, 0.01);
+        cryptoData[crypto].change = randomChange;
         
-        // Особые правила для стейблкоинов
+        // Tether остается стабильным
         if (crypto === 'tether') {
-            cryptoData[crypto].price = 0.999 + (Math.random() - 0.5) * 0.002;
+            cryptoData[crypto].price = 99.90 + (Math.random() - 0.5) * 0.2;
             cryptoData[crypto].change = (Math.random() - 0.5) * 0.1;
         }
     }
@@ -119,206 +101,135 @@ function updatePrices() {
 // Обновляем цены каждые 30 секунд
 setInterval(updatePrices, 30000);
 
-// Основной обработчик API
 module.exports = async (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     try {
-        if (req.method === 'GET') {
-            // Получение данных о рынке
-            const pricesInRub = {};
-            for (const [key, value] of Object.entries(cryptoData)) {
-                pricesInRub[key] = {
-                    ...value,
-                    price: value.price * USD_TO_RUB,
-                    priceUSD: value.price
-                };
-            }
-            
+        const { action, userId, crypto, amount } = req.body;
+        const user = initUser(userId || 'demo');
+        
+        if (action === 'get_data') {
             return res.json({
                 success: true,
-                marketData: pricesInRub,
+                user: {
+                    balance: user.balance,
+                    portfolio: user.portfolio,
+                    totalValue: calculateTotalValue(user, cryptoData)
+                },
+                prices: cryptoData,
                 timestamp: new Date().toISOString()
             });
         }
 
-        if (req.method === 'POST') {
-            const { action, userId, crypto, amount } = req.body;
+        if (action === 'buy') {
+            const price = cryptoData[crypto].price;
+            const cost = price * amount;
             
-            if (!action) {
-                return res.status(400).json({ 
+            if (cost > user.balance) {
+                return res.json({ 
                     success: false, 
-                    error: 'Action is required' 
+                    error: 'Недостаточно средств на балансе' 
                 });
             }
-
-            const user = initUser(userId || 'demo');
             
-            if (action === 'get_data') {
-                const pricesInRub = {};
-                for (const [key, value] of Object.entries(cryptoData)) {
-                    pricesInRub[key] = {
-                        ...value,
-                        price: value.price * USD_TO_RUB,
-                        priceUSD: value.price
-                    };
-                }
-                
-                return res.json({
-                    success: true,
-                    user: {
-                        balance: user.balance,
-                        portfolio: user.portfolio,
-                        totalValue: calculateTotalValue(user, pricesInRub)
-                    },
-                    prices: pricesInRub,
-                    timestamp: new Date().toISOString()
+            if (amount <= 0) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Некорректная сумма' 
                 });
             }
-
-            if (action === 'buy') {
-                if (!crypto || !amount) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Crypto and amount are required' 
-                    });
-                }
-
-                if (!cryptoData[crypto]) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Invalid cryptocurrency' 
-                    });
-                }
-
-                if (amount <= 0) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Amount must be positive' 
-                    });
-                }
-
-                const price = cryptoData[crypto].price * USD_TO_RUB;
-                const cost = price * amount;
-                
-                if (cost > user.balance) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Insufficient funds' 
-                    });
-                }
-                
-                // Выполнение покупки
-                user.balance -= cost;
-                user.portfolio[crypto] = (user.portfolio[crypto] || 0) + amount;
-                
-                // Добавление в историю
-                user.transactionHistory.push({
+            
+            user.balance -= cost;
+            user.portfolio[crypto] = (user.portfolio[crypto] || 0) + amount;
+            
+            // Добавляем в историю
+            user.transactionHistory.push({
+                type: 'buy',
+                crypto: crypto,
+                amount: amount,
+                price: price,
+                total: cost,
+                timestamp: new Date().toISOString()
+            });
+            
+            return res.json({ 
+                success: true, 
+                newBalance: user.balance,
+                newPortfolio: user.portfolio,
+                transaction: {
                     type: 'buy',
-                    crypto,
-                    amount,
-                    price: price,
-                    total: cost,
-                    timestamp: new Date().toISOString()
-                });
-                
-                return res.json({ 
-                    success: true, 
-                    newBalance: user.balance,
-                    newPortfolio: user.portfolio,
-                    transaction: {
-                        type: 'buy',
-                        crypto,
-                        amount,
-                        price: price,
-                        total: cost
-                    }
-                });
-            }
-
-            if (action === 'sell') {
-                if (!crypto || !amount) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Crypto and amount are required' 
-                    });
+                    crypto: crypto,
+                    amount: amount,
+                    totalCost: cost
                 }
-
-                if (amount <= 0) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Amount must be positive' 
-                    });
-                }
-
-                const currentAmount = user.portfolio[crypto] || 0;
-                
-                if (currentAmount < amount) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Insufficient assets' 
-                    });
-                }
-                
-                const price = cryptoData[crypto].price * USD_TO_RUB;
-                const revenue = price * amount;
-                
-                // Выполнение продажи
-                user.balance += revenue;
-                user.portfolio[crypto] = currentAmount - amount;
-                
-                // Добавление в историю
-                user.transactionHistory.push({
-                    type: 'sell',
-                    crypto,
-                    amount,
-                    price: price,
-                    total: revenue,
-                    timestamp: new Date().toISOString()
-                });
-                
-                return res.json({ 
-                    success: true, 
-                    newBalance: user.balance,
-                    newPortfolio: user.portfolio,
-                    transaction: {
-                        type: 'sell',
-                        crypto,
-                        amount,
-                        price: price,
-                        total: revenue
-                    }
-                });
-            }
-
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Unknown action' 
             });
         }
 
-        return res.status(405).json({ 
-            success: false, 
-            error: 'Method not allowed' 
-        });
+        if (action === 'sell') {
+            const currentAmount = user.portfolio[crypto] || 0;
+            
+            if (currentAmount < amount) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Недостаточно активов для продажи' 
+                });
+            }
+            
+            if (amount <= 0) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Некорректная сумма' 
+                });
+            }
+            
+            const price = cryptoData[crypto].price;
+            const revenue = price * amount;
+            
+            user.balance += revenue;
+            user.portfolio[crypto] = currentAmount - amount;
+            
+            // Добавляем в историю
+            user.transactionHistory.push({
+                type: 'sell',
+                crypto: crypto,
+                amount: amount,
+                price: price,
+                total: revenue,
+                timestamp: new Date().toISOString()
+            });
+            
+            return res.json({ 
+                success: true, 
+                newBalance: user.balance,
+                newPortfolio: user.portfolio,
+                transaction: {
+                    type: 'sell',
+                    crypto: crypto,
+                    amount: amount,
+                    totalRevenue: revenue
+                }
+            });
+        }
+
+        return res.json({ success: false, error: 'Неизвестное действие' });
 
     } catch (error) {
-        console.error('Trade API error:', error);
-        return res.status(500).json({ 
-            success: false, 
-            error: 'Internal server error' 
-        });
+        console.error('Trade error:', error);
+        return res.json({ success: false, error: 'Внутренняя ошибка сервера' });
     }
 };
 
-// Вспомогательные функции
 function calculateTotalValue(user, prices) {
     let total = user.balance;
     for (const [crypto, amount] of Object.entries(user.portfolio)) {
@@ -327,4 +238,4 @@ function calculateTotalValue(user, prices) {
         }
     }
     return total;
-        }
+}
