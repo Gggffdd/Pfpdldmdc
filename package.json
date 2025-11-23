@@ -4,12 +4,21 @@
   "description": "Telegram Crypto Wallet",
   "main": "api/bot.js",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "start": "node api/bot.js"
   },
   "dependencies": {
     "telegraf": "^4.16.3"
   },
   "engines": {
-    "node": "18.x"
-  }
+    "node": "22.x"
+  },
+  "keywords": [
+    "telegram",
+    "crypto",
+    "wallet",
+    "bot"
+  ],
+  "author": "Crypto Wallet Team",
+  "license": "MIT"
 }
