@@ -34,18 +34,28 @@ class CryptoWallet {
         this.init();
     }
 
-    init() {
+    async init() {
         this.tg.expand();
         this.tg.BackButton.hide();
+        this.tg.enableClosingConfirmation();
+        
         this.updateUserInfo();
-        this.loadUserData();
+        await this.loadUserData();
         this.initEventListeners();
+        this.startPriceUpdates();
     }
 
     initEventListeners() {
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.currency-dropdown')) {
                 this.hideCurrencyDropdown();
+            }
+        });
+
+        // Close modals on background click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.closeModal(e.target.id);
             }
         });
     }
@@ -64,7 +74,7 @@ class CryptoWallet {
                 avatarText = user.first_name.charAt(0).toUpperCase();
             }
             if (user.username) {
-                displayName = user.username;
+                displayName = `@${user.username}`;
                 avatarText = user.username.charAt(0).toUpperCase();
             }
         }
@@ -73,19 +83,42 @@ class CryptoWallet {
         if (name) name.textContent = displayName;
     }
 
-    loadUserData() {
-        setTimeout(() => {
-            this.userData = {
-                balance: 50000,
-                portfolio: {
-                    tether: 1500,
-                    toncoin: 25.5,
-                    bitcoin: 0.0012,
-                    ethereum: 0.085
-                }
-            };
+    async loadUserData() {
+        // Simulate API call
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                this.userData = {
+                    balance: 50000,
+                    portfolio: {
+                        tether: 1500,
+                        toncoin: 25.5,
+                        bitcoin: 0.0012,
+                        ethereum: 0.085
+                    },
+                    transactionHistory: []
+                };
+                this.updateUI();
+                resolve();
+            }, 800);
+        });
+    }
+
+    startPriceUpdates() {
+        // Simulate real-time price updates
+        setInterval(() => {
+            this.simulatePriceChange();
             this.updateUI();
-        }, 500);
+        }, 30000);
+    }
+
+    simulatePriceChange() {
+        Object.keys(this.cryptoPrices).forEach(crypto => {
+            if (crypto !== 'tether') {
+                const change = (Math.random() - 0.5) * 4; // -2% to +2%
+                this.cryptoPrices[crypto] *= (1 + change / 100);
+                this.cryptoPrices[crypto] = Math.max(this.cryptoPrices[crypto], 0.0001);
+            }
+        });
     }
 
     updateUI() {
@@ -139,6 +172,8 @@ class CryptoWallet {
             const currencySymbol = this.selectedCurrency === 'USD' ? '$' : 
                                 this.selectedCurrency === 'TON' ? 'TON' : '₽';
 
+            const change = this.calculate24hChange(asset.id);
+
             assetItem.innerHTML = `
                 <div class="asset-left">
                     <div class="asset-icon" style="background: ${asset.color};">
@@ -150,8 +185,11 @@ class CryptoWallet {
                     </div>
                 </div>
                 <div class="asset-right">
-                    <div class="asset-amount">${amount.toFixed(4)} ${asset.symbol}</div>
+                    <div class="asset-amount">${this.formatCrypto(amount)} ${asset.symbol}</div>
                     <div class="asset-value">${this.formatCurrency(value)} ${currencySymbol}</div>
+                    ${change !== null ? `<div class="asset-change ${change >= 0 ? 'positive' : 'negative'}" style="font-size: 10px; margin-top: 2px;">
+                        ${change >= 0 ? '↗' : '↘'} ${Math.abs(change).toFixed(2)}%
+                    </div>` : ''}
                 </div>
             `;
 
@@ -160,17 +198,27 @@ class CryptoWallet {
 
         if (!hasVisibleAssets) {
             assetsList.innerHTML = `
-                <div class="text-center" style="padding: 40px 20px; color: #666;">
-                    <div style="margin-bottom: 16px;">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                <div class="text-center" style="padding: 40px 20px; color: var(--secondary-text);">
+                    <div style="margin-bottom: 16px; opacity: 0.5;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 6h18v12H3V6zm16 10V8H5v8h14zM7 10h10v4H7v-4z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <div style="margin-bottom: 8px; font-weight: 600;">Активы отсутствуют</div>
-                    <div style="font-size: 0.9em;">Начните с покупки криптовалюты</div>
+                    <div style="margin-bottom: 8px; font-weight: 600; font-size: 16px;">Активы отсутствуют</div>
+                    <div style="font-size: 0.9em; opacity: 0.7;">Начните с покупки криптовалюты</div>
                 </div>
             `;
         }
+    }
+
+    calculate24hChange(assetId) {
+        // Simulate 24h price change
+        const basePrice = this.cryptoPrices[assetId];
+        if (!basePrice) return null;
+        
+        const volatility = assetId === 'tether' ? 0.1 : 
+                          assetId === 'bitcoin' ? 2.0 : 3.5;
+        return (Math.random() - 0.5) * volatility;
     }
 
     toggleCurrencyDropdown() {
@@ -195,35 +243,42 @@ class CryptoWallet {
         if (balanceElement.textContent.includes('*')) {
             this.updateBalance();
         } else {
-            balanceElement.textContent = '******';
+            balanceElement.textContent = '••••••';
         }
     }
 
     showDepositModal() {
-        document.getElementById('depositModal').style.display = 'flex';
+        this.showModal('depositModal');
     }
 
     showWithdrawModal() {
-        document.getElementById('withdrawModal').style.display = 'flex';
+        this.showModal('withdrawModal');
     }
 
     showExchangeModal() {
-        document.getElementById('exchangeModal').style.display = 'flex';
+        this.showModal('exchangeModal');
+    }
+
+    showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'flex';
+        }
     }
 
     showTransactionHistory() {
         this.tg.showPopup({
-            title: 'История Транзакций',
-            message: 'История транзакций будет доступна в следующем обновлении',
-            buttons: [{ type: 'ok' }]
+            title: '📊 История транзакций',
+            message: 'Функция истории транзакций будет доступна в следующем обновлении',
+            buttons: [{ type: 'default', text: 'Понятно' }]
         });
     }
 
     showNotifications() {
         this.tg.showPopup({
-            title: 'Уведомления',
-            message: 'Новых уведомлений нет',
-            buttons: [{ type: 'ok' }]
+            title: '🔔 Уведомления',
+            message: 'У вас нет новых уведомлений',
+            buttons: [{ type: 'default', text: 'ОК' }]
         });
     }
 
@@ -245,14 +300,17 @@ class CryptoWallet {
         }
         
         this.tg.showPopup({
-            title: asset.name,
-            message: `Количество: ${amount.toFixed(4)} ${asset.symbol}\nТекущая стоимость: ${this.formatCurrency(displayValue)} ${currencySymbol}\nЦена за единицу: ${this.formatCurrency(price)} ₽`,
-            buttons: [{ type: 'ok' }]
+            title: `${asset.symbol} - ${asset.name}`,
+            message: `💰 Количество: ${this.formatCrypto(amount)} ${asset.symbol}\n💸 Текущая стоимость: ${this.formatCurrency(displayValue)} ${currencySymbol}\n📈 Цена за единицу: ${this.formatCurrency(price)} ₽`,
+            buttons: [{ type: 'default', text: 'Закрыть' }]
         });
     }
 
     closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     toggleZeroBalances() {
@@ -260,7 +318,8 @@ class CryptoWallet {
         const toggleBtn = document.getElementById('zeroBalanceToggle');
         
         if (toggleBtn) {
-            toggleBtn.textContent = this.hideZeroBalances ? 'Показать все' : 'Скрыть мелкие балансы';
+            toggleBtn.textContent = this.hideZeroBalances ? 'Показать все' : 'Скрыть нулевые';
+            toggleBtn.classList.toggle('active', this.hideZeroBalances);
         }
         
         this.updateAssets();
@@ -273,14 +332,24 @@ class CryptoWallet {
             maximumFractionDigits: 2
         }).format(amount);
     }
+
+    formatCrypto(amount) {
+        if (typeof amount !== 'number') return '0.0000';
+        return new Intl.NumberFormat('ru-RU', {
+            minimumFractionDigits: 4,
+            maximumFractionDigits: 8
+        }).format(amount);
+    }
 }
 
+// Initialize app
 let walletApp;
 
 document.addEventListener('DOMContentLoaded', function() {
     walletApp = new CryptoWallet();
 });
 
+// Global functions for HTML onclick handlers
 function showDepositModal() { walletApp?.showDepositModal(); }
 function showWithdrawModal() { walletApp?.showWithdrawModal(); }
 function showExchangeModal() { walletApp?.showExchangeModal(); }
@@ -291,3 +360,15 @@ function toggleBalanceVisibility() { walletApp?.toggleBalanceVisibility(); }
 function closeModal(modalId) { walletApp?.closeModal(modalId); }
 function toggleCurrencyDropdown() { walletApp?.toggleCurrencyDropdown(); }
 function selectCurrency(currency) { walletApp?.selectCurrency(currency); }
+
+// Handle Escape key to close modals
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (modal.style.display === 'flex') {
+                walletApp.closeModal(modal.id);
+            }
+        });
+    }
+});
