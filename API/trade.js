@@ -94,23 +94,54 @@ function updatePrices() {
     }
 }
 
+// Обновляем цены каждые 30 секунд
 setInterval(updatePrices, 30000);
 
+function calculateTotalValue(user, prices) {
+    let total = user.balance;
+    for (const [crypto, amount] of Object.entries(user.portfolio)) {
+        if (amount > 0 && prices[crypto]) {
+            total += prices[crypto].price * amount;
+        }
+    }
+    return total;
+}
+
 module.exports = async (req, res) => {
+    // Настройка CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
     try {
+        if (req.method === 'GET') {
+            return res.json({
+                status: 'Trade API is running',
+                timestamp: new Date().toISOString(),
+                users: users.size
+            });
+        }
+
+        if (req.method !== 'POST') {
+            return res.status(405).json({ 
+                success: false, 
+                error: 'Method not allowed' 
+            });
+        }
+
         const { action, userId, crypto, amount } = req.body;
+        
+        if (!action) {
+            return res.status(400).json({
+                success: false,
+                error: 'Action is required'
+            });
+        }
+
         const user = initUser(userId || 'demo');
         
         if (action === 'get_data') {
@@ -127,6 +158,13 @@ module.exports = async (req, res) => {
         }
 
         if (action === 'buy') {
+            if (!crypto || !cryptoData[crypto]) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Неверная криптовалюта' 
+                });
+            }
+
             const price = cryptoData[crypto].price;
             const cost = price * amount;
             
@@ -159,11 +197,19 @@ module.exports = async (req, res) => {
             return res.json({ 
                 success: true, 
                 newBalance: user.balance,
-                newPortfolio: user.portfolio
+                newPortfolio: user.portfolio,
+                totalValue: calculateTotalValue(user, cryptoData)
             });
         }
 
         if (action === 'sell') {
+            if (!crypto || !cryptoData[crypto]) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Неверная криптовалюта' 
+                });
+            }
+
             const currentAmount = user.portfolio[crypto] || 0;
             
             if (currentAmount < amount) {
@@ -198,24 +244,21 @@ module.exports = async (req, res) => {
             return res.json({ 
                 success: true, 
                 newBalance: user.balance,
-                newPortfolio: user.portfolio
+                newPortfolio: user.portfolio,
+                totalValue: calculateTotalValue(user, cryptoData)
             });
         }
 
-        return res.json({ success: false, error: 'Неизвестное действие' });
+        return res.json({ 
+            success: false, 
+            error: 'Неизвестное действие' 
+        });
 
     } catch (error) {
-        console.error('Trade error:', error);
-        return res.json({ success: false, error: 'Внутренняя ошибка сервера' });
+        console.error('Trade API error:', error);
+        return res.status(500).json({ 
+            success: false, 
+            error: 'Внутренняя ошибка сервера' 
+        });
     }
 };
-
-function calculateTotalValue(user, prices) {
-    let total = user.balance;
-    for (const [crypto, amount] of Object.entries(user.portfolio)) {
-        if (amount > 0 && prices[crypto]) {
-            total += prices[crypto].price * amount;
-        }
-    }
-    return total;
-                            }
