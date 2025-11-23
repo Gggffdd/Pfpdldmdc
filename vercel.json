@@ -23,7 +23,7 @@
     {
       "src": "/api/trade",
       "dest": "/api/trade.js",
-      "methods": ["POST"]
+      "methods": ["POST", "OPTIONS"]
     },
     {
       "src": "/(.*)",
