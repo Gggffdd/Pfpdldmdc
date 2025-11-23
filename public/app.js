@@ -40,14 +40,37 @@ class CryptoWallet {
         this.updateUserInfo();
         this.loadUserData();
         this.initEventListeners();
+        this.initSmoothAnimations();
     }
 
     initEventListeners() {
-        // Close currency dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.currency-dropdown')) {
                 this.hideCurrencyDropdown();
             }
+        });
+    }
+
+    initSmoothAnimations() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '50px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.asset-item, .action-btn, .qr-banner').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
         });
     }
 
@@ -75,7 +98,6 @@ class CryptoWallet {
     }
 
     loadUserData() {
-        // Simulate API call
         setTimeout(() => {
             this.userData = {
                 balance: 50000,
@@ -87,7 +109,7 @@ class CryptoWallet {
                 }
             };
             this.updateUI();
-        }, 500);
+        }, 800);
     }
 
     updateUI() {
@@ -119,12 +141,11 @@ class CryptoWallet {
         assetsList.innerHTML = '';
         let hasVisibleAssets = false;
 
-        this.cryptoAssets.forEach(asset => {
+        this.cryptoAssets.forEach((asset, index) => {
             const amount = (this.userData?.portfolio && this.userData.portfolio[asset.id]) || 0;
             const price = this.cryptoPrices[asset.id] || 0;
             let value = price * amount;
 
-            // Convert value to selected currency
             if (this.selectedCurrency === 'USD') {
                 value = value / this.exchangeRates.USD;
             } else if (this.selectedCurrency === 'TON') {
@@ -137,6 +158,7 @@ class CryptoWallet {
 
             const assetItem = document.createElement('div');
             assetItem.className = 'asset-item';
+            assetItem.style.animationDelay = `${index * 0.1}s`;
             assetItem.onclick = () => this.showAssetDetail(asset.id);
 
             const currencySymbol = this.selectedCurrency === 'USD' ? '$' : 
@@ -163,20 +185,19 @@ class CryptoWallet {
 
         if (!hasVisibleAssets) {
             assetsList.innerHTML = `
-                <div class="text-center" style="padding: 40px 20px; color: #888;">
-                    <div style="margin-bottom: 16px;">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <div class="text-center" style="padding: 60px 20px; color: #888;">
+                    <div style="margin-bottom: 20px; opacity: 0.5;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                         </svg>
                     </div>
-                    <div style="margin-bottom: 8px;">Активы отсутствуют</div>
-                    <div style="font-size: 0.9em;">Начните с покупки криптовалюты</div>
+                    <div style="margin-bottom: 12px; font-size: 18px; font-weight: 600;">Активы отсутствуют</div>
+                    <div style="font-size: 15px; opacity: 0.7;">Начните с покупки криптовалюты</div>
                 </div>
             `;
         }
     }
 
-    // Currency Functions
     toggleCurrencyDropdown() {
         const options = document.getElementById('currencyOptions');
         options.classList.toggle('show');
@@ -194,7 +215,6 @@ class CryptoWallet {
         this.updateUI();
     }
 
-    // Balance Functions
     toggleBalanceVisibility() {
         const balanceElement = document.getElementById('totalBalance');
         if (balanceElement.textContent.includes('*')) {
@@ -204,7 +224,6 @@ class CryptoWallet {
         }
     }
 
-    // Modal Functions
     showDepositModal() {
         document.getElementById('depositModal').style.display = 'flex';
     }
@@ -272,7 +291,6 @@ class CryptoWallet {
         this.updateAssets();
     }
 
-    // Utility Functions
     formatCurrency(amount) {
         if (typeof amount !== 'number') return '0.00';
         return new Intl.NumberFormat('ru-RU', {
@@ -282,14 +300,12 @@ class CryptoWallet {
     }
 }
 
-// Инициализация приложения
 let walletApp;
 
 document.addEventListener('DOMContentLoaded', function() {
     walletApp = new CryptoWallet();
 });
 
-// Глобальные функции для onclick атрибутов
 function showDepositModal() { walletApp?.showDepositModal(); }
 function showWithdrawModal() { walletApp?.showWithdrawModal(); }
 function showExchangeModal() { walletApp?.showExchangeModal(); }
