@@ -1,173 +1,39 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Wallet</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="app-container">
-        <header class="app-header">
-            <button class="icon-btn scan-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 4H8V8H4V4ZM16 4H20V8H16V4ZM4 16H8V20H4V16ZM16 16H20V20H16V16ZM2 2H10V10H2V2ZM12 2H22V10H12V2ZM2 12H10V22H2V12ZM12 12H22V22H12V12Z" fill="currentColor"/>
+<section class="actions-section">
+    <div class="action-buttons">
+        <button class="action-btn" onclick="showDepositModal()">
+            <div class="btn-circle" style="background: var(--gradient-primary); color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
                 </svg>
-            </button>
-            
-            <div class="user-info-center">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-name" id="userName">Username</div>
             </div>
-            
-            <div class="header-actions">
-                <button class="icon-btn" onclick="showNotifications()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
-                    </svg>
-                </button>
+            <span>Пополнить</span>
+        </button>
+        
+        <button class="action-btn" onclick="showWithdrawModal()">
+            <div class="btn-circle" style="background: var(--gradient-secondary); color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 13H5v-2h14v2z" fill="currentColor"/>
+                </svg>
             </div>
-        </header>
-
-        <section class="balance-section">
-            <div class="balance-amount" id="totalBalance" onclick="toggleBalanceVisibility()">
-                50 000 ₽
+            <span>Вывести</span>
+        </button>
+        
+        <button class="action-btn" onclick="showExchangeModal()">
+            <div class="btn-circle" style="background: linear-gradient(135deg, #10B981, #059669); color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" fill="currentColor"/>
+                </svg>
             </div>
-            
-            <div class="currency-selector">
-                <span class="currency-label">Отображать в</span>
-                <div class="currency-dropdown" onclick="toggleCurrencyDropdown()">
-                    <span id="currentCurrency">RUB</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <path d="M7 10l5 5 5-5H7z" fill="currentColor"/>
-                    </svg>
-                </div>
-                <div class="currency-options" id="currencyOptions">
-                    <div class="currency-option" onclick="selectCurrency('RUB')">RUB</div>
-                    <div class="currency-option" onclick="selectCurrency('USD')">USD</div>
-                    <div class="currency-option" onclick="selectCurrency('TON')">TON</div>
-                </div>
+            <span>Обмен</span>
+        </button>
+        
+        <button class="action-btn" onclick="showExchangeModal()">
+            <div class="btn-circle" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0 4h2v-2H3v2zm12 0h2v-2h-2v2zm0 0h2v-2h-2v2zM3 9h2V7H3v2zm12-4h2V3h-2v2zm4 0h2V3h-2v2zM9 3H7v2h2V3zm4 0h-2v2h2V3zm4 0h-2v2h2V3zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm-8 8h2v-2h-2v2zm8 0h2v-2h-2v2z" fill="currentColor"/>
+                </svg>
             </div>
-        </section>
-
-        <section class="actions-section">
-            <div class="action-buttons">
-                <button class="action-btn" onclick="showDepositModal()">
-                    <div class="btn-circle">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <span>Пополнить</span>
-                </button>
-                
-                <button class="action-btn" onclick="showWithdrawModal()">
-                    <div class="btn-circle">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M19 13H5v-2h14v2z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <span>Вывести</span>
-                </button>
-                
-                <button class="action-btn" onclick="showExchangeModal()">
-                    <div class="btn-circle">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <span>Обмен</span>
-                </button>
-                
-                <button class="action-btn" onclick="showExchangeModal()">
-                    <div class="btn-circle">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0 4h2v-2H3v2zm12 0h2v-2h-2v2zm0 0h2v-2h-2v2zM3 9h2V7H3v2zm12-4h2V3h-2v2zm4 0h2V3h-2v2zM9 3H7v2h2V3zm4 0h-2v2h2V3zm4 0h-2v2h2V3zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm-8 8h2v-2h-2v2zm8 0h2v-2h-2v2z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <span>Биржа</span>
-                </button>
-            </div>
-        </section>
-
-        <section class="qr-banner">
-            <div class="qr-banner-content">
-                <div class="qr-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M1 1H7V7H1V1ZM9 1H15V7H9V1ZM17 1H23V7H17V1ZM1 9H7V15H1V9ZM9 9H15V15H9V9ZM17 9H23V15H17V9ZM1 17H7V23H1V17ZM9 17H15V23H9V17ZM17 17H23V23H17V17Z" fill="currentColor"/>
-                    </svg>
-                </div>
-                <div class="qr-text">
-                    <div class="qr-title">Оплата по QR-коду</div>
-                    <div class="qr-description">Оплачиваете любые покупки с помощью криптовалюты</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="assets-section">
-            <div class="section-header">
-                <h3 class="section-title">Активы</h3>
-                <button class="text-btn" onclick="toggleZeroBalances()" id="zeroBalanceToggle">
-                    Скрыть мелкие балансы
-                </button>
-            </div>
-            
-            <div class="assets-list" id="assetsList">
-                <!-- Assets will be loaded by JavaScript -->
-            </div>
-            
-            <button class="history-btn" onclick="showTransactionHistory()">
-                История Транзакций
-            </button>
-        </section>
+            <span>Биржа</span>
+        </button>
     </div>
-
-    <div class="modal" id="depositModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Пополнение счета</h3>
-                <button class="close-btn" onclick="closeModal('depositModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <p>Функция пополнения будет доступна в следующем обновлении</p>
-            </div>
-            <div class="modal-actions">
-                <button class="btn primary" onclick="closeModal('depositModal')">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="withdrawModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Вывод средств</h3>
-                <button class="close-btn" onclick="closeModal('withdrawModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <p>Функция вывода будет доступна в следующем обновлении</p>
-            </div>
-            <div class="modal-actions">
-                <button class="btn primary" onclick="closeModal('withdrawModal')">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="exchangeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Обмен валют</h3>
-                <button class="close-btn" onclick="closeModal('exchangeModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <p>Функция обмена будет доступна в следующем обновлении</p>
-            </div>
-            <div class="modal-actions">
-                <button class="btn primary" onclick="closeModal('exchangeModal')">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>
+</section>
