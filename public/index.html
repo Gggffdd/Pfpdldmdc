@@ -5,198 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Wallet Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
 </head>
 <body>
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <div class="header-content">
-                <div class="user-section">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-info">
-                        <div class="user-greeting" id="userGreeting">Добро пожаловать!</div>
-                        <div class="user-tier">
-                            <span class="tier-badge" id="userTier">STANDARD</span>
-                            <span class="premium-indicator" id="premiumIndicator"></span>
-                        </div>
-                    </div>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Трейдер</div>
+                    <div class="user-status">Профиль проверен</div>
                 </div>
-                <div class="header-actions">
-                    <button class="icon-btn" onclick="showNotifications()">
-                        <span class="icon">🔔</span>
-                        <span class="notification-badge" id="notificationBadge">3</span>
-                    </button>
-                    <button class="icon-btn" onclick="showSettings()">
-                        <span class="icon">⚙️</span>
-                    </button>
-                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showNotifications()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="icon-btn" onclick="showSecurity()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 11H19C18.86 12.28 18.48 13.52 17.89 14.66C17.3 15.8 16.52 16.82 15.57 17.67C14.62 18.52 13.52 19.19 12.33 19.64C11.14 20.09 9.88 20.31 8.62 20.29C7.36 20.27 6.11 20.01 4.94 19.52C3.77 19.03 2.7 18.32 1.79 17.43C0.88 16.54 0.15 15.48 -0.36 14.31C-0.86 13.14 -1.1 11.89 -1.07 10.63C-1.04 9.37 -0.75 8.12 -0.2 6.96C0.35 5.8 1.06 4.74 1.93 3.84C2.8 2.94 3.82 2.22 4.94 1.71C6.06 1.2 7.27 0.92 8.5 0.88C9.73 0.84 10.96 1.04 12.11 1.47L12 11Z" fill="currentColor"/>
+                    </svg>
+                </button>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Balance Card -->
-            <section class="balance-card">
-                <div class="balance-header">
-                    <div class="balance-title">
-                        <span class="icon">💰</span>
-                        Общий баланс
+        <!-- Balance Section -->
+        <section class="balance-section">
+            <div class="balance-header">
+                <span class="balance-label">Общий баланс</span>
+                <button class="visibility-btn" onclick="toggleBalanceVisibility()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="balance-amount" id="totalBalance">50 000 ₽</div>
+            
+            <div class="balance-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Доступно</div>
+                    <div class="stat-value" id="availableBalance">35 240 ₽</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">В активах</div>
+                    <div class="stat-value" id="investedBalance">14 760 ₽</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="actions-section">
+            <div class="action-buttons">
+                <button class="action-btn primary" onclick="showBuyModal()">
+                    <div class="btn-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="currentColor"/>
+                        </svg>
                     </div>
-                    <button class="eye-btn" onclick="toggleBalanceVisibility()">
-                        <span class="icon" id="eyeIcon">👁️</span>
-                    </button>
-                </div>
-                <div class="balance-amount" id="totalBalance">
-                    <span class="amount">50,000</span>
-                    <span class="currency">RUB</span>
-                </div>
-                <div class="balance-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Доступно</div>
-                        <div class="stat-value" id="availableBalance">25,340 RUB</div>
+                    <span>Купить</span>
+                </button>
+                <button class="action-btn" onclick="showSellModal()">
+                    <div class="btn-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M17 8l-1.41 1.41L17.17 11H9v2h8.17l-1.58 1.58L17 16l4-4-4-4zM5 5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7v-2H5V5z" fill="currentColor"/>
+                        </svg>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-label">В инвестициях</div>
-                        <div class="stat-value" id="investedBalance">24,660 RUB</div>
+                    <span>Продать</span>
+                </button>
+                <button class="action-btn" onclick="showTransferModal()">
+                    <div class="btn-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z" fill="currentColor"/>
+                        </svg>
                     </div>
-                </div>
-                <div class="profit-indicator">
-                    <span class="profit-label">Доходность за сегодня:</span>
-                    <span class="profit-value positive" id="dailyProfit">+2.3% (+1,150 RUB)</span>
-                </div>
-            </section>
-
-            <!-- Quick Actions -->
-            <section class="quick-actions">
-                <div class="action-grid">
-                    <button class="action-btn" onclick="showDepositModal()">
-                        <span class="action-icon">📥</span>
-                        <span class="action-text">Пополнить</span>
-                    </button>
-                    <button class="action-btn" onclick="showWithdrawModal()">
-                        <span class="action-icon">📤</span>
-                        <span class="action-text">Вывести</span>
-                    </button>
-                    <button class="action-btn" onclick="showExchangeModal()">
-                        <span class="action-icon">🔄</span>
-                        <span class="action-text">Обмен</span>
-                    </button>
-                    <button class="action-btn" onclick="showTradeModal()">
-                        <span class="action-icon">📊</span>
-                        <span class="action-text">Торговля</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Market Overview -->
-            <section class="market-section">
-                <div class="section-header">
-                    <h3 class="section-title">📈 Топ рынки</h3>
-                    <button class="view-all-btn" onclick="showAllMarkets()">Все</button>
-                </div>
-                <div class="markets-grid" id="marketsGrid">
-                    <!-- Markets will be populated by JavaScript -->
-                </div>
-            </section>
-
-            <!-- Portfolio Assets -->
-            <section class="portfolio-section">
-                <div class="section-header">
-                    <h3 class="section-title">💼 Ваши активы</h3>
-                    <div class="portfolio-actions">
-                        <button class="text-btn" onclick="toggleHiddenBalances()" id="hideBalancesBtn">
-                            Скрыть нули
-                        </button>
-                        <button class="text-btn" onclick="showPortfolioHistory()">
-                            История
-                        </button>
+                    <span>Перевод</span>
+                </button>
+                <button class="action-btn" onclick="showExchangeModal()">
+                    <div class="btn-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" fill="currentColor"/>
+                        </svg>
                     </div>
-                </div>
-                <div class="assets-list" id="assetsList">
-                    <!-- Assets will be populated by JavaScript -->
-                </div>
-            </section>
+                    <span>Обмен</span>
+                </button>
+            </div>
+        </section>
 
-            <!-- Quick Trade -->
-            <section class="quick-trade-section">
-                <div class="quick-trade-buttons">
-                    <button class="trade-btn buy-btn" onclick="showQuickBuyModal()">
-                        <span class="trade-icon">⚡</span>
-                        Быстрая покупка
+        <!-- Markets Section -->
+        <section class="markets-section">
+            <div class="section-header">
+                <h3 class="section-title">Рынки</h3>
+                <button class="view-all" onclick="showAllMarkets()">Все</button>
+            </div>
+            <div class="markets-grid" id="marketsGrid">
+                <!-- Markets will be loaded by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Assets Section -->
+        <section class="assets-section">
+            <div class="section-header">
+                <h3 class="section-title">Ваши активы</h3>
+                <div class="section-actions">
+                    <button class="text-btn" onclick="toggleZeroBalances()" id="zeroBalanceToggle">
+                        Скрыть нули
                     </button>
-                    <button class="trade-btn sell-btn" onclick="showQuickSellModal()">
-                        <span class="trade-icon">💸</span>
-                        Быстрая продажа
+                    <button class="text-btn" onclick="showPortfolioHistory()">
+                        История
                     </button>
                 </div>
-            </section>
-        </main>
-
-        <!-- Navigation -->
-        <nav class="bottom-nav">
-            <button class="nav-btn active" onclick="switchTab('portfolio')">
-                <span class="nav-icon">💼</span>
-                <span class="nav-text">Портфель</span>
-            </button>
-            <button class="nav-btn" onclick="switchTab('markets')">
-                <span class="nav-icon">📈</span>
-                <span class="nav-text">Рынки</span>
-            </button>
-            <button class="nav-btn" onclick="switchTab('trade')">
-                <span class="nav-icon">💰</span>
-                <span class="nav-text">Торговля</span>
-            </button>
-            <button class="nav-btn" onclick="switchTab('history')">
-                <span class="nav-icon">📋</span>
-                <span class="nav-text">История</span>
-            </button>
-        </nav>
+            </div>
+            <div class="assets-list" id="assetsList">
+                <!-- Assets will be loaded by JavaScript -->
+            </div>
+        </section>
     </div>
 
-    <!-- Modals -->
-    <div id="depositModal" class="modal">
+    <!-- Buy Modal -->
+    <div class="modal" id="buyModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">📥 Пополнение счета</h3>
-                <button class="close-btn" onclick="closeModal('depositModal')">×</button>
+                <h3 class="modal-title">Покупка актива</h3>
+                <button class="close-btn" onclick="closeModal('buyModal')">×</button>
             </div>
             <div class="modal-body">
-                <div class="crypto-grid" id="depositCryptoList">
-                    <!-- Crypto cards will be populated by JavaScript -->
+                <div class="crypto-selector" id="buyCryptoSelector">
+                    <!-- Crypto selector will be loaded by JavaScript -->
+                </div>
+                <div class="amount-input">
+                    <label for="buyAmount">Сумма покупки</label>
+                    <input type="number" id="buyAmount" placeholder="0.00" step="0.0001" min="0">
+                    <div class="input-currency" id="buyCurrency">BTC</div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-item">
+                        <span>Курс</span>
+                        <span id="buyPrice">0 ₽</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Комиссия</span>
+                        <span>0.1%</span>
+                    </div>
+                    <div class="detail-item total">
+                        <span>Итого</span>
+                        <span id="buyTotal">0 ₽</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn secondary" onclick="closeModal('depositModal')">Отмена</button>
-                <button class="btn primary" onclick="confirmDeposit()">Пополнить</button>
+            <div class="modal-actions">
+                <button class="btn secondary" onclick="closeModal('buyModal')">Отмена</button>
+                <button class="btn primary" onclick="executeBuy()">Купить</button>
             </div>
         </div>
     </div>
 
-    <div id="withdrawModal" class="modal">
+    <!-- Sell Modal -->
+    <div class="modal" id="sellModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">📤 Вывод средств</h3>
-                <button class="close-btn" onclick="closeModal('withdrawModal')">×</button>
+                <h3 class="modal-title">Продажа актива</h3>
+                <button class="close-btn" onclick="closeModal('sellModal')">×</button>
             </div>
             <div class="modal-body">
-                <div class="crypto-grid" id="withdrawCryptoList">
-                    <!-- Crypto cards will be populated by JavaScript -->
+                <div class="crypto-selector" id="sellCryptoSelector">
+                    <!-- Crypto selector will be loaded by JavaScript -->
+                </div>
+                <div class="amount-input">
+                    <label for="sellAmount">Количество для продажи</label>
+                    <input type="number" id="sellAmount" placeholder="0.00" step="0.0001" min="0">
+                    <div class="input-currency" id="sellCurrency">BTC</div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-item">
+                        <span>Курс</span>
+                        <span id="sellPrice">0 ₽</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Комиссия</span>
+                        <span>0.1%</span>
+                    </div>
+                    <div class="detail-item total">
+                        <span>Вы получите</span>
+                        <span id="sellTotal">0 ₽</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn secondary" onclick="closeModal('withdrawModal')">Отмена</button>
-                <button class="btn primary" onclick="confirmWithdraw()">Вывести</button>
+            <div class="modal-actions">
+                <button class="btn secondary" onclick="closeModal('sellModal')">Отмена</button>
+                <button class="btn primary" onclick="executeSell()">Продать</button>
             </div>
         </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Загрузка...</div>
     </div>
 
     <script src="app.js"></script>
 </body>
-</html>
+                </html>
