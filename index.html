@@ -21,8 +21,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
             overflow: hidden;
         }
 
@@ -64,7 +62,6 @@
             background-image: url('https://s10.iimage.su/s/08/gexzL1Xx1Hcz5JEPkZbzDdQBR7WXVto8AcCNCTtKK.webp');
             background-size: 400px 400px;
             background-repeat: repeat;
-            background-position: 0 0;
             cursor: crosshair;
         }
 
@@ -85,13 +82,12 @@
             pointer-events: auto;
             cursor: pointer;
             filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.5));
-            transition: transform 0.2s, filter 0.2s;
+            transition: transform 0.2s;
             z-index: 10;
         }
 
         .building:hover {
             transform: translate(-50%, -50%) scale(1.1);
-            filter: drop-shadow(0 15px 10px rgba(0, 0, 0, 0.6));
         }
 
         .building img {
@@ -99,22 +95,21 @@
             height: 100%;
             object-fit: contain;
             pointer-events: none;
-            border-radius: 12px;
         }
 
-        /* Карточка информации о доме */
+        /* Карточка информации */
         .info-card {
             position: absolute;
             bottom: 20px;
             left: 20px;
             right: 20px;
-            background: rgba(20, 30, 25, 0.95);
-            backdrop-filter: blur(15px);
+            background: rgba(20, 30, 25, 0.98);
+            backdrop-filter: blur(20px);
             border-radius: 30px;
             padding: 20px;
             color: white;
             border: 2px solid gold;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
             z-index: 200;
             transform: translateY(120%);
             transition: transform 0.3s ease;
@@ -126,40 +121,51 @@
             transform: translateY(0);
         }
 
-        .info-card .user-row {
+        .user-row {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
         }
 
-        .info-card .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background: gold;
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 35px;
+            background: linear-gradient(145deg, #f1c40f, #f39c12);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 30px;
             font-weight: bold;
             color: #1a2a1a;
+            overflow: hidden;
+            border: 3px solid gold;
         }
 
-        .info-card .avatar img {
+        .avatar img {
             width: 100%;
             height: 100%;
-            border-radius: 30px;
             object-fit: cover;
         }
 
-        .info-card .username {
-            font-size: 20px;
-            font-weight: 700;
-            color: gold;
+        .user-info {
+            flex: 1;
         }
 
-        .info-card .description {
+        .username {
+            font-size: 22px;
+            font-weight: 700;
+            color: gold;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .description {
             font-size: 16px;
             line-height: 1.5;
             color: #eee;
@@ -170,7 +176,7 @@
             white-space: pre-wrap;
         }
 
-        .info-card .close-btn {
+        .close-btn {
             position: absolute;
             top: 15px;
             right: 20px;
@@ -179,7 +185,7 @@
             cursor: pointer;
         }
 
-        .info-card .close-btn:hover {
+        .close-btn:hover {
             color: white;
         }
 
@@ -187,13 +193,14 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             color: gold;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 30px;
             font-size: 14px;
             z-index: 50;
             backdrop-filter: blur(4px);
+            border: 1px solid gold;
         }
 
         .minimap {
@@ -202,12 +209,11 @@
             right: 10px;
             width: 100px;
             height: 100px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
             border: 2px solid gold;
             border-radius: 16px;
             overflow: hidden;
             z-index: 100;
-            pointer-events: none;
         }
 
         .minimap canvas {
@@ -219,25 +225,24 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Информация -->
         <div class="hint" id="hint">👆 Нажми на дом</div>
 
-        <!-- Мини-карта -->
         <div class="minimap">
             <canvas id="minimapCanvas" width="100" height="100"></canvas>
         </div>
 
-        <!-- Карточка информации -->
         <div class="info-card" id="infoCard">
             <div class="close-btn" id="closeCardBtn">&times;</div>
-            <div class="user-row" id="userRow">
+            <div class="user-row">
                 <div class="avatar" id="avatar">👤</div>
-                <div class="username" id="username">@username</div>
+                <div class="user-info">
+                    <div class="username" id="username">@username</div>
+                    <div class="user-id" id="userId">ID: </div>
+                </div>
             </div>
             <div class="description" id="description">Описание отсутствует</div>
         </div>
 
-        <!-- ОГРОМНАЯ ЗЕМЛЯ -->
         <div class="ground-wrapper" id="groundWrapper">
             <div class="ground-area" id="ground">
                 <div class="buildings-layer" id="buildingsLayer"></div>
@@ -246,7 +251,6 @@
     </div>
 
     <script>
-        // Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
@@ -259,13 +263,15 @@
         const ctx = minimapCanvas.getContext('2d');
         const infoCard = document.getElementById('infoCard');
         const closeCardBtn = document.getElementById('closeCardBtn');
-        const avatarDiv = document.getElementById('avatar');
+        const avatar = document.getElementById('avatar');
         const usernameSpan = document.getElementById('username');
+        const userIdSpan = document.getElementById('userId');
         const descriptionDiv = document.getElementById('description');
         const hint = document.getElementById('hint');
 
         // Данные
         let houses = [];
+        let avatarsCache = {};
 
         // ТВОИ 5 ДОМОВ
         const houseImages = [
@@ -276,20 +282,28 @@
             'https://s10.iimage.su/s/08/gtSjpVOxYCH3tRmN4dmRMaTU6uASXnutoywRVuYU4.png'
         ];
 
-        // Загрузка домов из Telegram
+        // Загрузка домов
         function loadHouses() {
             tg.sendData(JSON.stringify({ action: 'get_houses' }));
             
-            // Пока заглушка для теста
-            setTimeout(() => {
-                // Тестовые дома
-                const testHouses = [
-                    { user_id: 1, username: 'alice', description: 'Привет! Я Алиса', x: 20, y: 30, type: 1 },
-                    { user_id: 2, username: 'bob', description: '', x: 50, y: 60, type: 2 },
-                    { user_id: 3, username: 'charlie', description: 'Люблю котиков', x: 70, y: 40, type: 3 }
-                ];
-                renderHouses(testHouses);
-            }, 500);
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.houses) {
+                        renderHouses(data.houses);
+                    } else if (data.photo_url) {
+                        // Сохраняем фото в кэш
+                        if (data.user_id) {
+                            avatarsCache[data.user_id] = data.photo_url;
+                            // Обновляем аватарку в открытой карточке
+                            const currentUserId = userIdSpan.textContent.replace('ID: ', '');
+                            if (currentUserId == data.user_id) {
+                                showAvatar(data.photo_url);
+                            }
+                        }
+                    }
+                } catch (e) {}
+            });
         }
 
         // Отрисовка домов
@@ -307,11 +321,10 @@
                 const img = document.createElement('img');
                 const type = house.type || 1;
                 img.src = houseImages[(type-1) % houseImages.length];
-                img.alt = `House of @${house.username}`;
+                img.alt = house.username;
                 
                 buildingDiv.appendChild(img);
                 
-                // Клик на дом
                 buildingDiv.addEventListener('click', function(e) {
                     e.stopPropagation();
                     showHouseInfo(house);
@@ -325,43 +338,43 @@
 
         // Показать информацию о доме
         function showHouseInfo(house) {
-            // Аватарка (заглушка)
-            avatarDiv.innerHTML = house.username.charAt(0).toUpperCase();
-            
-            // Юзернейм
-            usernameSpan.textContent = '@' + house.username;
-            
-            // Описание
+            usernameSpan.textContent = '@' + (house.username || 'unknown');
+            userIdSpan.textContent = 'ID: ' + house.user_id;
             descriptionDiv.textContent = house.description || 'Описание отсутствует';
             
-            // Показываем карточку
+            // Пытаемся загрузить аватарку
+            avatar.innerHTML = '<span>' + (house.first_name?.charAt(0) || house.username?.charAt(0) || '👤') + '</span>';
+            
+            if (avatarsCache[house.user_id]) {
+                showAvatar(avatarsCache[house.user_id]);
+            } else {
+                // Запрашиваем фото
+                tg.sendData(JSON.stringify({ 
+                    action: 'get_user_photo', 
+                    user_id: house.user_id 
+                }));
+            }
+            
             infoCard.classList.add('show');
             hint.style.opacity = '0';
         }
 
-        // Закрыть карточку
+        function showAvatar(url) {
+            avatar.innerHTML = `<img src="${url}" onerror="this.style.display='none'">`;
+        }
+
         closeCardBtn.addEventListener('click', function() {
             infoCard.classList.remove('show');
             hint.style.opacity = '1';
-        });
-
-        // Клик вне карточки
-        document.addEventListener('click', function(e) {
-            if (!infoCard.contains(e.target) && infoCard.classList.contains('show')) {
-                infoCard.classList.remove('show');
-                hint.style.opacity = '1';
-            }
         });
 
         // Мини-карта
         function updateMinimap() {
             ctx.clearRect(0, 0, 100, 100);
             
-            // Фон
             ctx.fillStyle = '#3a7e3a';
             ctx.fillRect(0, 0, 100, 100);
             
-            // Сетка
             ctx.strokeStyle = '#5a9e5a';
             ctx.lineWidth = 0.5;
             for (let i = 0; i <= 100; i += 20) {
@@ -369,28 +382,22 @@
                 ctx.moveTo(i, 0);
                 ctx.lineTo(i, 100);
                 ctx.stroke();
-                
                 ctx.beginPath();
                 ctx.moveTo(0, i);
                 ctx.lineTo(100, i);
                 ctx.stroke();
             }
             
-            // Дома
             houses.forEach(house => {
-                const miniX = house.x / 100 * 100;
-                const miniY = house.y / 100 * 100;
-                
                 ctx.fillStyle = '#f1c40f';
                 ctx.beginPath();
-                ctx.arc(miniX, miniY, 3, 0, 2 * Math.PI);
+                ctx.arc(house.x, house.y, 3, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 1;
                 ctx.stroke();
             });
             
-            // Видимая область
             const scrollLeft = groundWrapper.scrollLeft;
             const scrollTop = groundWrapper.scrollTop;
             const viewportWidth = groundWrapper.clientWidth;
