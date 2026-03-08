@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Город · карта</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0a1a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            background: #1a3a1a;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ground-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #2b5e2b;
+            scrollbar-width: thin;
+        }
+
+        .ground-wrapper::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .ground-wrapper::-webkit-scrollbar-track {
+            background: #3a5e3a;
+        }
+        .ground-wrapper::-webkit-scrollbar-thumb {
+            background: #8b6b4d;
+            border-radius: 3px;
+        }
+
+        .ground-area {
+            width: 2000px;
+            height: 2000px;
+            position: relative;
+            background-image: url('https://s10.iimage.su/s/08/gexzL1Xx1Hcz5JEPkZbzDdQBR7WXVto8AcCNCTtKK.webp');
+            background-size: 400px 400px;
+            background-repeat: repeat;
+            background-position: 0 0;
+            cursor: crosshair;
+        }
+
+        .buildings-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .building {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+            filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.5));
+            transition: transform 0.2s, filter 0.2s;
+            z-index: 10;
+        }
+
+        .building:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            filter: drop-shadow(0 15px 10px rgba(0, 0, 0, 0.6));
+        }
+
+        .building img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            border-radius: 12px;
+        }
+
+        /* Карточка информации о доме */
+        .info-card {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(20, 30, 25, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 20px;
+            color: white;
+            border: 2px solid gold;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            transform: translateY(120%);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .info-card.show {
+            transform: translateY(0);
+        }
+
+        .info-card .user-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-card .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: gold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #1a2a1a;
+        }
+
+        .info-card .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
+            object-fit: cover;
+        }
+
+        .info-card .username {
+            font-size: 20px;
+            font-weight: 700;
+            color: gold;
+        }
+
+        .info-card .description {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #eee;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+
+        .info-card .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .info-card .close-btn:hover {
+            color: white;
+        }
+
+        .hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.5);
+            color: gold;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 50;
+            backdrop-filter: blur(4px);
+        }
+
+        .minimap {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid gold;
+            border-radius: 16px;
+            overflow: hidden;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .minimap canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Информация -->
+        <div class="hint" id="hint">👆 Нажми на дом</div>
+
+        <!-- Мини-карта -->
+        <div class="minimap">
+            <canvas id="minimapCanvas" width="100" height="100"></canvas>
+        </div>
+
+        <!-- Карточка информации -->
+        <div class="info-card" id="infoCard">
+            <div class="close-btn" id="closeCardBtn">&times;</div>
+            <div class="user-row" id="userRow">
+                <div class="avatar" id="avatar">👤</div>
+                <div class="username" id="username">@username</div>
+            </div>
+            <div class="description" id="description">Описание отсутствует</div>
+        </div>
+
+        <!-- ОГРОМНАЯ ЗЕМЛЯ -->
+        <div class="ground-wrapper" id="groundWrapper">
+            <div class="ground-area" id="ground">
+                <div class="buildings-layer" id="buildingsLayer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Элементы
+        const groundWrapper = document.getElementById('groundWrapper');
+        const ground = document.getElementById('ground');
+        const buildingsLayer = document.getElementById('buildingsLayer');
+        const minimapCanvas = document.getElementById('minimapCanvas');
+        const ctx = minimapCanvas.getContext('2d');
+        const infoCard = document.getElementById('infoCard');
+        const closeCardBtn = document.getElementById('closeCardBtn');
+        const avatarDiv = document.getElementById('avatar');
+        const usernameSpan = document.getElementById('username');
+        const descriptionDiv = document.getElementById('description');
+        const hint = document.getElementById('hint');
+
+        // Данные
+        let houses = [];
+
+        // ТВОИ 5 ДОМОВ
+        const houseImages = [
+            'https://s10.iimage.su/s/08/gb66IX5xq3hmjyryf1yrgXjGv2VNYVdTmDEcwB0s3.png',
+            'https://s10.iimage.su/s/08/gv8fZHTxrANqbnPzfU0Nufmgstqg6vSr58eKb48B1.png',
+            'https://s10.iimage.su/s/08/gtwHpmuxcpDzdBWpy2tC8b7aBSPTyNrEtCdUTHVBC.png',
+            'https://s10.iimage.su/s/08/gjiB7D2xq9Zv6YRrb6HnKsSO6ZdFm9QAm2J0690Qf.png',
+            'https://s10.iimage.su/s/08/gtSjpVOxYCH3tRmN4dmRMaTU6uASXnutoywRVuYU4.png'
+        ];
+
+        // Загрузка домов из Telegram
+        function loadHouses() {
+            tg.sendData(JSON.stringify({ action: 'get_houses' }));
+            
+            // Пока заглушка для теста
+            setTimeout(() => {
+                // Тестовые дома
+                const testHouses = [
+                    { user_id: 1, username: 'alice', description: 'Привет! Я Алиса', x: 20, y: 30, type: 1 },
+                    { user_id: 2, username: 'bob', description: '', x: 50, y: 60, type: 2 },
+                    { user_id: 3, username: 'charlie', description: 'Люблю котиков', x: 70, y: 40, type: 3 }
+                ];
+                renderHouses(testHouses);
+            }, 500);
+        }
+
+        // Отрисовка домов
+        function renderHouses(housesData) {
+            houses = housesData;
+            buildingsLayer.innerHTML = '';
+            
+            houses.forEach(house => {
+                const buildingDiv = document.createElement('div');
+                buildingDiv.className = 'building';
+                buildingDiv.style.left = house.x + '%';
+                buildingDiv.style.top = house.y + '%';
+                buildingDiv.setAttribute('data-user', house.user_id);
+                
+                const img = document.createElement('img');
+                const type = house.type || 1;
+                img.src = houseImages[(type-1) % houseImages.length];
+                img.alt = `House of @${house.username}`;
+                
+                buildingDiv.appendChild(img);
+                
+                // Клик на дом
+                buildingDiv.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showHouseInfo(house);
+                });
+                
+                buildingsLayer.appendChild(buildingDiv);
+            });
+            
+            updateMinimap();
+        }
+
+        // Показать информацию о доме
+        function showHouseInfo(house) {
+            // Аватарка (заглушка)
+            avatarDiv.innerHTML = house.username.charAt(0).toUpperCase();
+            
+            // Юзернейм
+            usernameSpan.textContent = '@' + house.username;
+            
+            // Описание
+            descriptionDiv.textContent = house.description || 'Описание отсутствует';
+            
+            // Показываем карточку
+            infoCard.classList.add('show');
+            hint.style.opacity = '0';
+        }
+
+        // Закрыть карточку
+        closeCardBtn.addEventListener('click', function() {
+            infoCard.classList.remove('show');
+            hint.style.opacity = '1';
+        });
+
+        // Клик вне карточки
+        document.addEventListener('click', function(e) {
+            if (!infoCard.contains(e.target) && infoCard.classList.contains('show')) {
+                infoCard.classList.remove('show');
+                hint.style.opacity = '1';
+            }
+        });
+
+        // Мини-карта
+        function updateMinimap() {
+            ctx.clearRect(0, 0, 100, 100);
+            
+            // Фон
+            ctx.fillStyle = '#3a7e3a';
+            ctx.fillRect(0, 0, 100, 100);
+            
+            // Сетка
+            ctx.strokeStyle = '#5a9e5a';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 100; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, 100);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(100, i);
+                ctx.stroke();
+            }
+            
+            // Дома
+            houses.forEach(house => {
+                const miniX = house.x / 100 * 100;
+                const miniY = house.y / 100 * 100;
+                
+                ctx.fillStyle = '#f1c40f';
+                ctx.beginPath();
+                ctx.arc(miniX, miniY, 3, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+            
+            // Видимая область
+            const scrollLeft = groundWrapper.scrollLeft;
+            const scrollTop = groundWrapper.scrollTop;
+            const viewportWidth = groundWrapper.clientWidth;
+            const viewportHeight = groundWrapper.clientHeight;
+            
+            const viewX = (scrollLeft / 2000) * 100;
+            const viewY = (scrollTop / 2000) * 100;
+            const viewW = (viewportWidth / 2000) * 100;
+            const viewH = (viewportHeight / 2000) * 100;
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(viewX, viewY, viewW, viewH);
+        }
+
+        groundWrapper.addEventListener('scroll', updateMinimap);
+        window.addEventListener('resize', updateMinimap);
+
+        // Загружаем дома
+        loadHouses();
+    </script>
+</body>
+</html>
