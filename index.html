@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Город · карта</title>
+    <title>Город</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -34,25 +34,13 @@
             flex-direction: column;
         }
 
+        /* ===== КАРТА ===== */
         .ground-wrapper {
             flex: 1;
             position: relative;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             background: #2b5e2b;
-            scrollbar-width: thin;
-        }
-
-        .ground-wrapper::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .ground-wrapper::-webkit-scrollbar-track {
-            background: #3a5e3a;
-        }
-        .ground-wrapper::-webkit-scrollbar-thumb {
-            background: #8b6b4d;
-            border-radius: 3px;
         }
 
         .ground-area {
@@ -97,7 +85,32 @@
             pointer-events: none;
         }
 
-        /* Карточка информации */
+        .building.mine {
+            filter: drop-shadow(0 0 15px gold) drop-shadow(0 12px 8px rgba(0, 0, 0, 0.5));
+        }
+
+        /* ===== КНОПКА ДОБАВЛЕНИЯ (ДЛЯ АДМИНА) ===== */
+        .admin-add-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: gold;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: #1a2a1a;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+            cursor: pointer;
+            z-index: 100;
+            border: 3px solid white;
+        }
+
+        /* ===== КАРТОЧКА ДОМА ===== */
         .info-card {
             position: absolute;
             bottom: 20px;
@@ -149,20 +162,11 @@
             object-fit: cover;
         }
 
-        .user-info {
-            flex: 1;
-        }
-
         .username {
             font-size: 22px;
             font-weight: 700;
             color: gold;
             margin-bottom: 5px;
-        }
-
-        .user-id {
-            font-size: 14px;
-            color: #aaa;
         }
 
         .description {
@@ -172,8 +176,44 @@
             background: rgba(255,255,255,0.1);
             padding: 15px;
             border-radius: 20px;
-            margin-top: 10px;
+            margin: 15px 0;
             white-space: pre-wrap;
+        }
+
+        .description-edit {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid gold;
+            border-radius: 20px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            margin: 15px 0;
+            resize: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button {
+            flex: 1;
+            background: gold;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            color: #1a2a1a;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .button.delete {
+            background: #ff4444;
+            color: white;
         }
 
         .close-btn {
@@ -185,35 +225,67 @@
             cursor: pointer;
         }
 
-        .close-btn:hover {
-            color: white;
+        /* ===== МОДАЛКА ДОБАВЛЕНИЯ ===== */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
 
-        .hint {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.6);
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #1a2a1a;
+            border: 3px solid gold;
+            border-radius: 40px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-title {
+            font-size: 24px;
             color: gold;
-            padding: 8px 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid gold;
             border-radius: 30px;
-            font-size: 14px;
-            z-index: 50;
-            backdrop-filter: blur(4px);
-            border: 1px solid gold;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
 
         .minimap {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
+            bottom: 20px;
+            right: 20px;
             width: 100px;
             height: 100px;
             background: rgba(0,0,0,0.7);
             border: 2px solid gold;
             border-radius: 16px;
             overflow: hidden;
-            z-index: 100;
+            z-index: 50;
         }
 
         .minimap canvas {
@@ -225,24 +297,56 @@
 </head>
 <body>
     <div class="game-container">
-        <div class="hint" id="hint">👆 Нажми на дом</div>
-
+        <!-- Мини-карта -->
         <div class="minimap">
             <canvas id="minimapCanvas" width="100" height="100"></canvas>
         </div>
 
+        <!-- Кнопка добавления дома (только для админа) -->
+        <div class="admin-add-btn" id="addHouseBtn" style="display: none;">➕</div>
+
+        <!-- Карточка дома -->
         <div class="info-card" id="infoCard">
             <div class="close-btn" id="closeCardBtn">&times;</div>
             <div class="user-row">
                 <div class="avatar" id="avatar">👤</div>
-                <div class="user-info">
+                <div>
                     <div class="username" id="username">@username</div>
-                    <div class="user-id" id="userId">ID: </div>
+                    <div id="isMine" style="color: gold; font-size: 14px;"></div>
                 </div>
             </div>
-            <div class="description" id="description">Описание отсутствует</div>
+            
+            <div id="descriptionView">
+                <div class="description" id="description">Описание отсутствует</div>
+            </div>
+            
+            <div id="descriptionEdit" style="display: none;">
+                <textarea class="description-edit" id="descriptionInput" rows="3"></textarea>
+                <div class="button-group">
+                    <div class="button" id="saveDescriptionBtn">💾 Сохранить</div>
+                    <div class="button delete" id="deleteDescriptionBtn">🗑️ Удалить</div>
+                </div>
+            </div>
+            
+            <div class="button-group" id="actionButtons">
+                <div class="button" id="editDescriptionBtn">✏️ Редактировать</div>
+                <div class="button" id="closeInfoBtn">Закрыть</div>
+            </div>
         </div>
 
+        <!-- Модалка добавления дома -->
+        <div class="modal" id="addHouseModal">
+            <div class="modal-content">
+                <div class="modal-title">🏠 Добавить дом</div>
+                <input type="text" class="modal-input" id="newUsername" placeholder="@username">
+                <div class="button-group">
+                    <div class="button" id="confirmAddBtn">Добавить</div>
+                    <div class="button delete" id="cancelAddBtn">Отмена</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Карта -->
         <div class="ground-wrapper" id="groundWrapper">
             <div class="ground-area" id="ground">
                 <div class="buildings-layer" id="buildingsLayer"></div>
@@ -255,6 +359,9 @@
         tg.expand();
         tg.ready();
 
+        const userId = tg.initDataUnsafe?.user?.id;
+        const isAdmin = userId === 896706118;
+
         // Элементы
         const groundWrapper = document.getElementById('groundWrapper');
         const ground = document.getElementById('ground');
@@ -265,13 +372,31 @@
         const closeCardBtn = document.getElementById('closeCardBtn');
         const avatar = document.getElementById('avatar');
         const usernameSpan = document.getElementById('username');
-        const userIdSpan = document.getElementById('userId');
-        const descriptionDiv = document.getElementById('description');
-        const hint = document.getElementById('hint');
+        const description = document.getElementById('description');
+        const descriptionView = document.getElementById('descriptionView');
+        const descriptionEdit = document.getElementById('descriptionEdit');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const isMineSpan = document.getElementById('isMine');
+        const editDescriptionBtn = document.getElementById('editDescriptionBtn');
+        const saveDescriptionBtn = document.getElementById('saveDescriptionBtn');
+        const deleteDescriptionBtn = document.getElementById('deleteDescriptionBtn');
+        const closeInfoBtn = document.getElementById('closeInfoBtn');
+        const actionButtons = document.getElementById('actionButtons');
+        const addHouseBtn = document.getElementById('addHouseBtn');
+        const addHouseModal = document.getElementById('addHouseModal');
+        const newUsername = document.getElementById('newUsername');
+        const confirmAddBtn = document.getElementById('confirmAddBtn');
+        const cancelAddBtn = document.getElementById('cancelAddBtn');
 
         // Данные
         let houses = [];
+        let currentHouse = null;
         let avatarsCache = {};
+
+        // Показываем кнопку добавления только админу
+        if (isAdmin) {
+            addHouseBtn.style.display = 'flex';
+        }
 
         // ТВОИ 5 ДОМОВ
         const houseImages = [
@@ -285,26 +410,34 @@
         // Загрузка домов
         function loadHouses() {
             tg.sendData(JSON.stringify({ action: 'get_houses' }));
-            
-            tg.onEvent('message', function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.houses) {
-                        renderHouses(data.houses);
-                    } else if (data.photo_url) {
-                        // Сохраняем фото в кэш
-                        if (data.user_id) {
-                            avatarsCache[data.user_id] = data.photo_url;
-                            // Обновляем аватарку в открытой карточке
-                            const currentUserId = userIdSpan.textContent.replace('ID: ', '');
-                            if (currentUserId == data.user_id) {
-                                showAvatar(data.photo_url);
-                            }
+        }
+
+        // Обработка ответов
+        tg.onEvent('message', function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.houses) {
+                    renderHouses(data.houses);
+                }
+                else if (data.photo_url) {
+                    if (data.user_id) {
+                        avatarsCache[data.user_id] = data.photo_url;
+                        if (currentHouse?.user_id === data.user_id) {
+                            showAvatar(data.photo_url);
                         }
                     }
-                } catch (e) {}
-            });
-        }
+                }
+                else if (data.success && currentHouse) {
+                    // Обновляем данные
+                    loadHouses();
+                    infoCard.classList.remove('show');
+                }
+                else if (data.error) {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (e) {}
+        });
 
         // Отрисовка домов
         function renderHouses(housesData) {
@@ -314,13 +447,15 @@
             houses.forEach(house => {
                 const buildingDiv = document.createElement('div');
                 buildingDiv.className = 'building';
+                if (house.user_id === userId) {
+                    buildingDiv.classList.add('mine');
+                }
                 buildingDiv.style.left = house.x + '%';
                 buildingDiv.style.top = house.y + '%';
                 buildingDiv.setAttribute('data-user', house.user_id);
                 
                 const img = document.createElement('img');
-                const type = house.type || 1;
-                img.src = houseImages[(type-1) % houseImages.length];
+                img.src = houseImages[(house.type-1) % houseImages.length];
                 img.alt = house.username;
                 
                 buildingDiv.appendChild(img);
@@ -338,34 +473,93 @@
 
         // Показать информацию о доме
         function showHouseInfo(house) {
+            currentHouse = house;
             usernameSpan.textContent = '@' + (house.username || 'unknown');
-            userIdSpan.textContent = 'ID: ' + house.user_id;
-            descriptionDiv.textContent = house.description || 'Описание отсутствует';
+            description.textContent = house.description || 'Описание отсутствует';
+            descriptionInput.value = house.description || '';
             
-            // Пытаемся загрузить аватарку
+            const isMine = house.user_id === userId;
+            isMineSpan.textContent = isMine ? '🏠 Это ваш дом' : '';
+            
+            // Показываем кнопки в зависимости от владельца
+            if (isMine) {
+                actionButtons.style.display = 'flex';
+                editDescriptionBtn.style.display = 'block';
+            } else {
+                actionButtons.style.display = 'flex';
+                editDescriptionBtn.style.display = 'none';
+            }
+            
+            descriptionView.style.display = 'block';
+            descriptionEdit.style.display = 'none';
+            
+            // Аватарка
             avatar.innerHTML = '<span>' + (house.first_name?.charAt(0) || house.username?.charAt(0) || '👤') + '</span>';
-            
             if (avatarsCache[house.user_id]) {
                 showAvatar(avatarsCache[house.user_id]);
             } else {
-                // Запрашиваем фото
                 tg.sendData(JSON.stringify({ 
-                    action: 'get_user_photo', 
+                    action: 'get_photo', 
                     user_id: house.user_id 
                 }));
             }
             
             infoCard.classList.add('show');
-            hint.style.opacity = '0';
         }
 
         function showAvatar(url) {
             avatar.innerHTML = `<img src="${url}" onerror="this.style.display='none'">`;
         }
 
+        // Редактирование описания
+        editDescriptionBtn.addEventListener('click', function() {
+            descriptionView.style.display = 'none';
+            descriptionEdit.style.display = 'block';
+            actionButtons.style.display = 'none';
+        });
+
+        saveDescriptionBtn.addEventListener('click', function() {
+            const newDesc = descriptionInput.value;
+            tg.sendData(JSON.stringify({ 
+                action: 'update_description', 
+                description: newDesc 
+            }));
+        });
+
+        deleteDescriptionBtn.addEventListener('click', function() {
+            if (confirm('Удалить описание?')) {
+                tg.sendData(JSON.stringify({ action: 'delete_description' }));
+            }
+        });
+
         closeCardBtn.addEventListener('click', function() {
             infoCard.classList.remove('show');
-            hint.style.opacity = '1';
+        });
+
+        closeInfoBtn.addEventListener('click', function() {
+            infoCard.classList.remove('show');
+        });
+
+        // Добавление дома (админ)
+        addHouseBtn.addEventListener('click', function() {
+            addHouseModal.classList.add('show');
+        });
+
+        confirmAddBtn.addEventListener('click', function() {
+            const username = newUsername.value.trim();
+            if (username) {
+                tg.sendData(JSON.stringify({ 
+                    action: 'add_house', 
+                    username: username 
+                }));
+                addHouseModal.classList.remove('show');
+                newUsername.value = '';
+            }
+        });
+
+        cancelAddBtn.addEventListener('click', function() {
+            addHouseModal.classList.remove('show');
+            newUsername.value = '';
         });
 
         // Мини-карта
@@ -375,21 +569,8 @@
             ctx.fillStyle = '#3a7e3a';
             ctx.fillRect(0, 0, 100, 100);
             
-            ctx.strokeStyle = '#5a9e5a';
-            ctx.lineWidth = 0.5;
-            for (let i = 0; i <= 100; i += 20) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, 100);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(100, i);
-                ctx.stroke();
-            }
-            
             houses.forEach(house => {
-                ctx.fillStyle = '#f1c40f';
+                ctx.fillStyle = house.user_id === userId ? 'gold' : '#f1c40f';
                 ctx.beginPath();
                 ctx.arc(house.x, house.y, 3, 0, 2 * Math.PI);
                 ctx.fill();
@@ -400,13 +581,10 @@
             
             const scrollLeft = groundWrapper.scrollLeft;
             const scrollTop = groundWrapper.scrollTop;
-            const viewportWidth = groundWrapper.clientWidth;
-            const viewportHeight = groundWrapper.clientHeight;
-            
+            const viewW = (groundWrapper.clientWidth / 2000) * 100;
+            const viewH = (groundWrapper.clientHeight / 2000) * 100;
             const viewX = (scrollLeft / 2000) * 100;
             const viewY = (scrollTop / 2000) * 100;
-            const viewW = (viewportWidth / 2000) * 100;
-            const viewH = (viewportHeight / 2000) * 100;
             
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 2;
