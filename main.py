@@ -20,11 +20,11 @@ from telegram.ext import (
 from telegram.constants import ParseMode
 
 # ---------- Environment & Configuration ----------
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_TOKEN = os.environ.get("8554211393:AAFvVaR-TaxdR3jBOoH7CMAPlSGwlGruZr0")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN environment variable is missing")
 
-OWNER_ID = int(os.environ.get("BOT_OWNER_ID", "8104850843"))
+OWNER_ID = int(os.environ.get("BOT_OWNER_ID", "896706118"))
 ADMIN_IDS = [
     int(x.strip()) for x in os.environ.get("BOT_ADMIN_IDS", "8104850843,5987905091").split(",")
 ]
